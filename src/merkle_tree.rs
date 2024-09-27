@@ -1,16 +1,25 @@
 use sha2::{Digest, Sha256};
 
-
 pub struct MerkleTree {
     tree: Vec<String>,
     depth: u8,
     amount: usize,
 }
 
+impl Default for MerkleTree {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MerkleTree {
-    pub fn new () -> Self {
+    pub fn new() -> Self {
         let tree = Vec::new();
-        MerkleTree { tree, depth:0, amount: 0}
+        MerkleTree {
+            tree,
+            depth: 0,
+            amount: 0,
+        }
     }
 
     pub fn add_raw(&mut self, raw_text: String) {
@@ -30,7 +39,7 @@ impl MerkleTree {
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
         let amount_of_copies = self.tree.len() - self.amount - non_leaf_nodes;
 
-        if gap > 0 && amount_of_copies <= 0 {
+        if gap > 0 && amount_of_copies == 0 {
             for _ in 0..gap {
                 self.tree.push(hashed_string.clone());
             }
@@ -40,9 +49,10 @@ impl MerkleTree {
             self.tree.push(hashed_string);
         } else if amount_of_copies > 0 {
             self.tree.pop();
-            self.tree.insert(non_leaf_nodes + self.amount, hashed_string);
+            self.tree
+                .insert(non_leaf_nodes + self.amount, hashed_string);
         }
-        
+
         self.amount += 1;
         self.rehash_tree(0);
     }
@@ -55,7 +65,7 @@ impl MerkleTree {
         if self.amount == 1 {
             return;
         }
-        if MerkleTree::number_is_exact_log_2(self.amount as f32){
+        if MerkleTree::number_is_exact_log_2(self.amount as f32) {
             self.depth += 1;
             for _ in 0..self.amount {
                 self.tree.insert(self.amount - 1, "".to_string());
@@ -67,37 +77,31 @@ impl MerkleTree {
         if num <= 0.0 {
             return false;
         }
-    
+
         let log = num.log(2.0);
         log.fract() == 0.0
     }
 
     fn rehash_tree(&mut self, pos: usize) {
-        if let None = self.tree.get(pos) {
+        if self.tree.get(pos).is_none() {
             return;
         }
         self.rehash_tree(pos + 1);
         let pos_hash = self.tree[pos].clone();
-        let result = match self.tree.get(2*pos + 1) {
-            Some(hashed_left) => {
-                match self.tree.get(2*pos + 2) {
-                    Some(hashed_right) => {
-                        MerkleTree::combine_hashes(hashed_left.to_string(), hashed_right.to_string())
-                    },
-                    None => {
-                        hashed_left.to_string()            
-                    },
+        let result = match self.tree.get(2 * pos + 1) {
+            Some(hashed_left) => match self.tree.get(2 * pos + 2) {
+                Some(hashed_right) => {
+                    MerkleTree::combine_hashes(hashed_left.to_string(), hashed_right.to_string())
                 }
+                None => hashed_left.to_string(),
             },
-            None => {
-                pos_hash      
-            },
+            None => pos_hash,
         };
 
         self.tree[pos] = result;
     }
 
-    fn combine_hashes (hash_left: String, hash_right: String) -> String {
+    fn combine_hashes(hash_left: String, hash_right: String) -> String {
         let mut hasher = Sha256::new();
         hasher.update(hash_left);
         hasher.update(hash_right);
@@ -105,7 +109,6 @@ impl MerkleTree {
         hex::encode(hashed)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -137,11 +140,11 @@ mod tests {
     }
 
     #[test]
-    fn test_02 () {
+    fn test_02() {
         // Add a raw text to the tree, grows depth and tree now contains the hash
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
-        
+
         let hased_string_0 = calculate_hash("Merkle Tree");
         let hased_string_1 = calculate_hash("Merkle Tree");
         let hashed_string_root = calculate_hash_double(&hased_string_0, &hased_string_1);
@@ -152,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_03 () {
+    fn test_03() {
         // Add a two raw texts to the tree, depth is two and tree root is result of hashing both
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -162,14 +165,14 @@ mod tests {
         let hashed_string_1 = calculate_hash("Ralph Merkle");
 
         let hashed_string_root = calculate_hash_double(&hashed_string_0, &hashed_string_1);
-        
+
         assert_eq!(1, tree.depth);
         assert_eq!(hashed_string_root, tree.tree[0]);
         // 5a13e205575dc3d9a374dfe32941511e62f8cf900fb9df59cae9c17bd8b8ce15
     }
 
     #[test]
-    fn test_04 () {
+    fn test_04() {
         // Add a three raw texts to the tree, depth is two and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -178,23 +181,23 @@ mod tests {
 
         let hashed_string_00 = calculate_hash("Merkle Tree");
         let hashed_string_01 = calculate_hash("Ralph Merkle");
-        
+
         let hashed_string_0 = calculate_hash_double(&hashed_string_00, &hashed_string_01);
 
         let hashed_string_10 = calculate_hash("Game of Life");
         let hashed_string_11 = calculate_hash("Game of Life");
 
-       let hashed_string_1 = calculate_hash_double(&hashed_string_10, &hashed_string_11);
+        let hashed_string_1 = calculate_hash_double(&hashed_string_10, &hashed_string_11);
 
         let hashed_string_root = calculate_hash_double(&hashed_string_0, &hashed_string_1);
-        
+
         assert_eq!(2, tree.depth);
         assert_eq!(hashed_string_root, tree.tree[0]);
         // d28d8deea9f793a014e668ea4050f34dc669cfc6084cd7bf3ba9ccdf62901cbf
     }
 
     #[test]
-    fn test_05 () {
+    fn test_05() {
         // Add a four raw texts to the tree, depth is two and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -204,7 +207,7 @@ mod tests {
 
         let hashed_string_00 = calculate_hash("Merkle Tree");
         let hashed_string_01 = calculate_hash("Ralph Merkle");
-        
+
         let hashed_string_10 = calculate_hash("Game of Life");
         let hashed_string_11 = calculate_hash("John Conway");
 
@@ -219,7 +222,7 @@ mod tests {
     }
 
     #[test]
-    fn test_06 () {
+    fn test_06() {
         // Add a five raw texts to the tree, depth is three and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -231,7 +234,7 @@ mod tests {
 
         let hashed_string_000 = calculate_hash("Merkle Tree");
         let hashed_string_001 = calculate_hash("Ralph Merkle");
-        
+
         let hashed_string_010 = calculate_hash("Game of Life");
         let hashed_string_011 = calculate_hash("John Conway");
 
@@ -247,7 +250,6 @@ mod tests {
 
         let hashed_string_10 = calculate_hash_double(&hashed_string_100, &hashed_string_101);
         let hashed_string_11 = calculate_hash_double(&hashed_string_110, &hashed_string_111);
-        
 
         let hashed_string_1 = calculate_hash_double(&hashed_string_10, &hashed_string_11);
         let hashed_string_root = calculate_hash_double(&hashed_string_0, &hashed_string_1);
@@ -258,7 +260,7 @@ mod tests {
     }
 
     #[test]
-    fn test_07 () {
+    fn test_07() {
         // Add a eight raw texts to the tree, depth is three and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -296,7 +298,7 @@ mod tests {
     }
 
     #[test]
-    fn test_08 () {
+    fn test_08() {
         // Add a nine raw texts to the tree, depth is four and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -343,7 +345,7 @@ mod tests {
 
         let hashed_string_10 = calculate_hash_double(&hashed_string_100, &hashed_string_101);
         let hashed_string_11 = calculate_hash_double(&hashed_string_110, &hashed_string_111);
-        
+
         let hashed_string_0 = calculate_hash_double(&hashed_string_00, &hashed_string_01);
         let hashed_string_1 = calculate_hash_double(&hashed_string_10, &hashed_string_11);
 
@@ -353,6 +355,4 @@ mod tests {
         assert_eq!(hashed_string_root, tree.tree[0]);
         // 7d6aca7ece41a33246a1fe3d13dcf074b701aa43717a19a93047553fc38294b0
     }
-
 }
-

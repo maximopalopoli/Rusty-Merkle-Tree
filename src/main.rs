@@ -2,7 +2,6 @@ use merkle_tree::MerkleTree;
 pub mod merkle_tree;
 use sha2::{Digest, Sha256};
 
-
 fn calculate_hash(encoding_str: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(encoding_str);
@@ -64,11 +63,11 @@ fn main() {
 
     let hashed_string_10 = calculate_hash_double(&hashed_string_100, &hashed_string_101);
     let hashed_string_11 = calculate_hash_double(&hashed_string_110, &hashed_string_111);
-    
+
     let hashed_string_0 = calculate_hash_double(&hashed_string_00, &hashed_string_01);
     let hashed_string_1 = calculate_hash_double(&hashed_string_10, &hashed_string_11);
 
     let hashed_string_root = calculate_hash_double(&hashed_string_0, &hashed_string_1);
 
-    println!("{hashed_string_root}");    
+    println!("{hashed_string_root}");
 }
