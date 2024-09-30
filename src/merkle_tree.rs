@@ -66,7 +66,7 @@ impl MerkleTree {
         if self.amount == 1 {
             return;
         }
-        if MerkleTree::number_si_power_of_two(self.amount as f32) {
+        if MerkleTree::number_is_power_of_two(self.amount as f32) {
             self.depth += 1;
             for _ in 0..self.amount {
                 self.tree.insert(self.amount - 1, "".to_string());
@@ -74,7 +74,7 @@ impl MerkleTree {
         }
     }
 
-    fn number_si_power_of_two(num: f32) -> bool {
+    fn number_is_power_of_two(num: f32) -> bool {
         if num <= 0.0 {
             return false;
         }
@@ -379,13 +379,13 @@ mod tests {
 
     #[test]
     fn test_11() {
-        assert!(MerkleTree::number_si_power_of_two(1.));
-        assert!(MerkleTree::number_si_power_of_two(2.));
-        assert!(MerkleTree::number_si_power_of_two(8.));
-        assert!(MerkleTree::number_si_power_of_two(64.));
-        assert!(MerkleTree::number_si_power_of_two(128.));
-        assert!(MerkleTree::number_si_power_of_two(512.));
-        assert!(MerkleTree::number_si_power_of_two(2048.));
+        assert!(MerkleTree::number_is_power_of_two(1.));
+        assert!(MerkleTree::number_is_power_of_two(2.));
+        assert!(MerkleTree::number_is_power_of_two(8.));
+        assert!(MerkleTree::number_is_power_of_two(64.));
+        assert!(MerkleTree::number_is_power_of_two(128.));
+        assert!(MerkleTree::number_is_power_of_two(512.));
+        assert!(MerkleTree::number_is_power_of_two(2048.));
     }
 
 
