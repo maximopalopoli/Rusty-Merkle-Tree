@@ -84,24 +84,24 @@ impl MerkleTree {
     }
 
     /// Decided to insert all the copies to the tree when needed to fill spaces
-    fn insert_hash(&mut self, hashed_string: String){
+    fn insert_hash(&mut self, hashed_string: String) {
         let gap = 2_i8.pow(self.depth as u32) - (self.amount + 1) as i8;
 
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
         let amount_of_copies = self.tree.len() - self.amount - non_leaf_nodes;
 
         if gap > 0 && amount_of_copies == 0 {
-        // When i do insert and there are spaces left
+            // When i do insert and there are spaces left
             for _ in 0..gap {
                 self.tree.push(hashed_string.clone());
             }
             self.tree.push(hashed_string.clone());
         } else if gap <= 0 {
-        // When i replace the last copy element placed to fill the elements
+            // When i replace the last copy element placed to fill the elements
             self.tree.pop();
             self.tree.push(hashed_string);
         } else if amount_of_copies > 0 {
-        // When i replace copy element placed to fill the elements but it's not the last
+            // When i replace copy element placed to fill the elements but it's not the last
             self.tree.pop();
             self.tree
                 .insert(non_leaf_nodes + self.amount, hashed_string);
@@ -119,9 +119,7 @@ impl MerkleTree {
         let pos_hash = self.tree[pos].clone();
         let result = match self.tree.get(2 * pos + 1) {
             Some(hashed_left) => match self.tree.get(2 * pos + 2) {
-                Some(hashed_right) => {
-                    MerkleTree::combine_hashes(hashed_left, hashed_right)
-                }
+                Some(hashed_right) => MerkleTree::combine_hashes(hashed_left, hashed_right),
                 None => hashed_left.to_string(),
             },
             None => pos_hash,
@@ -152,7 +150,7 @@ mod tests {
         let hased_string_0 = MerkleTree::hash_raw("Merkle Tree");
         let hased_string_1 = MerkleTree::hash_raw("Merkle Tree");
         let hashed_string_root = MerkleTree::combine_hashes(&hased_string_0, &hased_string_1);
-        
+
         assert_eq!(1, tree.depth);
         assert_eq!(hashed_string_root, tree.tree[0]);
         // e92a2fd865f0aada3a9b81de2ca576ae627c025dd282fc2be754f9dee4e234fd
@@ -334,15 +332,23 @@ mod tests {
         let hashed_string_1110 = MerkleTree::hash_raw("Tetris5");
         let hashed_string_1111 = MerkleTree::hash_raw("Tetris5");
 
-        let hashed_string_000 = MerkleTree::combine_hashes(&hashed_string_0000, &hashed_string_0001);
-        let hashed_string_001 = MerkleTree::combine_hashes(&hashed_string_0010, &hashed_string_0011);
-        let hashed_string_010 = MerkleTree::combine_hashes(&hashed_string_0100, &hashed_string_0101);
-        let hashed_string_011 = MerkleTree::combine_hashes(&hashed_string_0110, &hashed_string_0111);
+        let hashed_string_000 =
+            MerkleTree::combine_hashes(&hashed_string_0000, &hashed_string_0001);
+        let hashed_string_001 =
+            MerkleTree::combine_hashes(&hashed_string_0010, &hashed_string_0011);
+        let hashed_string_010 =
+            MerkleTree::combine_hashes(&hashed_string_0100, &hashed_string_0101);
+        let hashed_string_011 =
+            MerkleTree::combine_hashes(&hashed_string_0110, &hashed_string_0111);
 
-        let hashed_string_100 = MerkleTree::combine_hashes(&hashed_string_1000, &hashed_string_1001);
-        let hashed_string_101 = MerkleTree::combine_hashes(&hashed_string_1010, &hashed_string_1011);
-        let hashed_string_110 = MerkleTree::combine_hashes(&hashed_string_1100, &hashed_string_1101);
-        let hashed_string_111 = MerkleTree::combine_hashes(&hashed_string_1110, &hashed_string_1111);
+        let hashed_string_100 =
+            MerkleTree::combine_hashes(&hashed_string_1000, &hashed_string_1001);
+        let hashed_string_101 =
+            MerkleTree::combine_hashes(&hashed_string_1010, &hashed_string_1011);
+        let hashed_string_110 =
+            MerkleTree::combine_hashes(&hashed_string_1100, &hashed_string_1101);
+        let hashed_string_111 =
+            MerkleTree::combine_hashes(&hashed_string_1110, &hashed_string_1111);
 
         let hashed_string_00 = MerkleTree::combine_hashes(&hashed_string_000, &hashed_string_001);
         let hashed_string_01 = MerkleTree::combine_hashes(&hashed_string_010, &hashed_string_011);
@@ -363,9 +369,18 @@ mod tests {
     #[test]
     fn test_9() {
         // Assert that hash function works correctly
-        assert_eq!(MerkleTree::hash_raw("Merkle Tree"), "cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952");
-        assert_eq!(MerkleTree::hash_raw("Merkle Root"), "09b4b6987df5353bfe0055491ac474539691011d0e95ecdaf8ad06906504308b");
-        assert_eq!(MerkleTree::hash_raw("Ralph Merkle"), "5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736");
+        assert_eq!(
+            MerkleTree::hash_raw("Merkle Tree"),
+            "cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952"
+        );
+        assert_eq!(
+            MerkleTree::hash_raw("Merkle Root"),
+            "09b4b6987df5353bfe0055491ac474539691011d0e95ecdaf8ad06906504308b"
+        );
+        assert_eq!(
+            MerkleTree::hash_raw("Ralph Merkle"),
+            "5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736"
+        );
     }
 
     #[test]
@@ -373,8 +388,14 @@ mod tests {
         // Assert that the combine hashes function works as expected
         let hash_left = MerkleTree::hash_raw("Merkle Tree");
         let hash_right = MerkleTree::hash_raw("Merkle Root");
-        assert_eq!(MerkleTree::combine_hashes(&hash_left, &hash_right), "c4f431efc6c50e3b703e11233dd219eaef584c24e4a4b76da22487eb74ec9258");
-        assert_eq!(MerkleTree::combine_hashes(&hash_right, &hash_left), "39d978a783e10f39b039ff6a022d7761f8bf74104d663717037e4825d86da10b");
+        assert_eq!(
+            MerkleTree::combine_hashes(&hash_left, &hash_right),
+            "c4f431efc6c50e3b703e11233dd219eaef584c24e4a4b76da22487eb74ec9258"
+        );
+        assert_eq!(
+            MerkleTree::combine_hashes(&hash_right, &hash_left),
+            "39d978a783e10f39b039ff6a022d7761f8bf74104d663717037e4825d86da10b"
+        );
     }
 
     #[test]
@@ -387,7 +408,4 @@ mod tests {
         assert!(MerkleTree::number_is_power_of_two(512.));
         assert!(MerkleTree::number_is_power_of_two(2048.));
     }
-
-
-
 }
