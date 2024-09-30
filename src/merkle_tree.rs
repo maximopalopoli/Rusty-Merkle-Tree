@@ -26,6 +26,26 @@ impl MerkleTree {
         }
     }
 
+    pub fn build(hashes: Vec<&str>) -> Self {
+        let mut tree = MerkleTree::new();
+
+        for hash in hashes {
+            tree.add(hash.to_string());
+        }
+
+        tree
+    }
+
+    pub fn build_raw(hashes: Vec<&str>) -> Self {
+        let mut tree = MerkleTree::new();
+
+        for hash in hashes {
+            tree.add_raw(hash.to_string());
+        }
+
+        tree
+    }
+
     fn hash_raw(raw_text: &str) -> String {
         let mut hasher = Sha256::new();
         hasher.update(raw_text);
@@ -457,5 +477,27 @@ mod tests {
         tree.add_raw("John Conway".to_string());
 
         assert!(!tree.verify(vec!["5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(), "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()], "not_a_seed".to_string(), &mut 0) )
+    }
+
+    #[test]
+    fn test_14 () {
+        // I can build a tree from an array, and it contains the elements
+
+        let tree = MerkleTree::build(vec!["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d", "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6"]);
+
+
+        assert!(
+            tree.verify(vec!["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(), "d50c873877f38fcbc56dbe836b9d979912efcb587ed8eea919372d403b5c2bd4".to_string()], "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d".to_string(), &mut 1) )
+    }
+
+    #[test]
+    fn test_15 () {
+        // I can build a tree from an array, and it contains the elements
+
+        let tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
+
+
+        assert!(
+            tree.verify(vec!["2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6".to_string(), "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da".to_string()], "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4".to_string(), &mut 3) )
     }
 }
