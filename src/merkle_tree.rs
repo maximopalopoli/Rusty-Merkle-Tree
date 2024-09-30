@@ -5,7 +5,7 @@ pub struct MerkleTree {
     /// I've chosen a vector temporarily bc it was the simpler way to do it
     tree: Vec<String>,
     /// How deep reaches the table from the root to the leaves
-    depth: u8,
+    depth: usize,
     /// Ammount of elements
     amount: usize,
 }
@@ -126,6 +126,30 @@ impl MerkleTree {
         };
 
         self.tree[pos] = result;
+    }
+
+    pub fn verify(&self ,proof: Vec<String>, leaf: String, index: &mut i32) -> bool {
+        let mut hash = leaf;
+
+        MerkleTree::generate_root(proof, &mut hash, index);
+
+        hash == self.tree[0]
+    }
+
+    fn generate_root(proof: Vec<String>, hash: &mut String, index: &mut i32) {
+        for proof_element in proof {
+            if *index % 2 == 0 {
+                *hash = MerkleTree::combine_hashes(hash, &proof_element);
+            } else {
+                *hash = MerkleTree::combine_hashes(&proof_element, hash);
+            }
+
+            *index /= 2;
+        }
+    }
+
+    pub fn depth(&self) -> usize {
+        self.depth
     }
 }
 
@@ -367,7 +391,7 @@ mod tests {
     }
 
     #[test]
-    fn test_9() {
+    fn test_09() {
         // Assert that hash function works correctly
         assert_eq!(
             MerkleTree::hash_raw("Merkle Tree"),
@@ -407,5 +431,31 @@ mod tests {
         assert!(MerkleTree::number_is_power_of_two(128.));
         assert!(MerkleTree::number_is_power_of_two(512.));
         assert!(MerkleTree::number_is_power_of_two(2048.));
+    }
+
+    #[test]
+    fn test_12 () {
+        // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
+        let mut tree = MerkleTree::new();
+        tree.add_raw("Merkle Tree".to_string());
+        tree.add_raw("Ralph Merkle".to_string());
+        tree.add_raw("Game of Life".to_string());
+        tree.add_raw("John Conway".to_string());
+
+        assert!(
+     tree.verify(vec!["5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(), "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()], "cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952".to_string(), &mut 0) )
+
+    }
+
+    #[test]
+    fn test_13 () {
+        // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
+        let mut tree = MerkleTree::new();
+        tree.add_raw("Merkle Tree".to_string());
+        tree.add_raw("Ralph Merkle".to_string());
+        tree.add_raw("Game of Life".to_string());
+        tree.add_raw("John Conway".to_string());
+
+        assert!(!tree.verify(vec!["5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(), "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()], "not_a_seed".to_string(), &mut 0) )
     }
 }
