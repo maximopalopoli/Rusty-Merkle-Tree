@@ -171,7 +171,101 @@ impl MerkleTree {
     pub fn depth(&self) -> usize {
         self.depth
     }
+
+    fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
+        let mut proof: Vec<String> = Vec::new();
+
+        let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
+        let leaves = self.tree[non_leaf_nodes..].into();
+        println!("{:?} \n", leaves);
+
+        if let Some(root) = build_merkle_tree(leaves) {
+            let rut = root.clone();
+            generate_proof(&Some(Box::new(root)), *index, &mut proof);
+            println!("Root es: {:?} \n", rut);
+        };
+
+        proof.reverse();
+
+        proof
+    }
 }
+
+#[derive(Debug, Clone)]
+struct MerkleNode {
+    hash: String,
+    left: Option<Box<MerkleNode>>,
+    right: Option<Box<MerkleNode>>,
+}
+
+impl MerkleNode {
+    fn new(hash: String) -> Self {
+        MerkleNode {
+            hash,
+            left: None,
+            right: None,
+        }
+    }
+
+    fn combine(left: &MerkleNode, right: &MerkleNode) -> Self {
+        let mut hasher = Sha256::new();
+        hasher.update(&left.hash);
+        hasher.update(&right.hash);
+        let combined_hash = hasher.finalize().to_vec();
+        let hash = hex::encode(combined_hash);
+        MerkleNode {
+            hash,
+            left: Some(Box::new(left.clone())),
+            right: Some(Box::new(right.clone())),
+        }
+    }
+}
+
+fn build_merkle_tree(data: Vec<String>) -> Option<MerkleNode> {
+    if data.is_empty() {
+        return None;
+    }
+
+    let mut nodes: Vec<MerkleNode> = data.into_iter().map(MerkleNode::new).collect();
+    
+    while nodes.len() > 1 {
+        let mut parent_nodes = vec![];
+        for chunk in nodes.chunks(2) {
+            let left = &chunk[0];
+            let right = chunk.get(1).unwrap_or(left);
+            parent_nodes.push(MerkleNode::combine(left, right));
+        }
+        nodes = parent_nodes;
+    }
+    
+    nodes.into_iter().next()
+}
+
+fn generate_proof(tree: &Option<Box<MerkleNode>>, index: usize, proof: &mut Vec<String>) {
+    if let Some(node) = tree {
+        println!("Estoy en el nodo de {}", node.hash);
+        if node.left.is_none() && node.right.is_none() {
+            return;
+        }
+
+        if index % 2 == 0 {
+            if let Some(left) = &node.left {
+                proof.push(left.hash.clone());
+            }
+        } else {
+            if let Some(right) = &node.right {
+                proof.push(right.hash.clone());
+            }
+        }
+
+        if index % 2 == 0 {
+            generate_proof(&node.right, index / 2, proof);
+        } else {
+            generate_proof(&node.left, index / 2, proof);
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -499,5 +593,14 @@ mod tests {
 
         assert!(
             tree.verify(vec!["2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6".to_string(), "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da".to_string()], "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4".to_string(), &mut 3) )
+    }
+
+    #[test]
+    fn test_16 () {
+        // The proof is the expected
+        let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
+
+        println!("{:?}", tree.tree);
+        assert_eq!(vec!["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(), "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a".to_string()], tree.generate_proof(&mut 1))
     }
 }
