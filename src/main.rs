@@ -34,7 +34,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
             // Usage: add-raw raw-text
             tree.add_raw(args[1].to_string());
             // example: add John-Conway
-        }, // Note: Doesn't support blank_spaces in raw-text yet. TODO
+        },
         "verify" => {
             // Usage: verify proof1 proof2 ... proofN seed index
             let mut proof = Vec::new();

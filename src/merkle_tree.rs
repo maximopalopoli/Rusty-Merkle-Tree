@@ -3,7 +3,7 @@ use sha2::{Digest, Sha256};
 /// This structure represents a Merkle Tree, with a Vector
 pub struct MerkleTree {
     /// I've chosen a vector temporarily bc it was the simpler way to do it
-    tree: Vec<String>,
+    elements: Vec<String>,
     /// How deep reaches the table from the root to the leaves
     depth: usize,
     /// Ammount of elements
@@ -18,9 +18,9 @@ impl Default for MerkleTree {
 
 impl MerkleTree {
     pub fn new() -> Self {
-        let tree = Vec::new();
+        let elements = Vec::new();
         MerkleTree {
-            tree,
+            elements,
             depth: 0,
             amount: 0,
         }
@@ -75,7 +75,7 @@ impl MerkleTree {
     fn resize_tree(&mut self) {
         if self.amount == 0 {
             self.depth = 1;
-            self.tree.insert(0, "".to_string());
+            self.elements.insert(0, "".to_string());
         }
         // Needed this bc 1 is power of two and should not execute the logic that is inside the if
         if self.amount == 1 {
@@ -84,7 +84,7 @@ impl MerkleTree {
         if MerkleTree::number_is_power_of_two(self.amount as f32) {
             self.depth += 1;
             for _ in 0..self.amount {
-                self.tree.insert(self.amount - 1, "".to_string());
+                self.elements.insert(self.amount - 1, "".to_string());
             }
         }
     }
@@ -103,22 +103,22 @@ impl MerkleTree {
         let gap = 2_i8.pow(self.depth as u32) - (self.amount + 1) as i8;
 
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
-        let amount_of_copies = self.tree.len() - self.amount - non_leaf_nodes;
+        let amount_of_copies = self.elements.len() - self.amount - non_leaf_nodes;
 
         if gap > 0 && amount_of_copies == 0 {
             // When i do insert and there are spaces left
             for _ in 0..gap {
-                self.tree.push(hashed_string.clone());
+                self.elements.push(hashed_string.clone());
             }
-            self.tree.push(hashed_string.clone());
+            self.elements.push(hashed_string.clone());
         } else if gap <= 0 {
             // When i replace the last copy element placed to fill the elements
-            self.tree.pop();
-            self.tree.push(hashed_string);
+            self.elements.pop();
+            self.elements.push(hashed_string);
         } else if amount_of_copies > 0 {
             // When i replace copy element placed to fill the elements but it's not the last
-            self.tree.pop();
-            self.tree
+            self.elements.pop();
+            self.elements
                 .insert(non_leaf_nodes + self.amount, hashed_string);
         }
 
@@ -127,20 +127,20 @@ impl MerkleTree {
 
     /// The logic is: First, insert the element, and then recalculate the middle hashes
     fn rehash_tree(&mut self, pos: usize) {
-        if self.tree.get(pos).is_none() {
+        if self.elements.get(pos).is_none() {
             return;
         }
         self.rehash_tree(pos + 1);
-        let pos_hash = self.tree[pos].clone();
-        let result = match self.tree.get(2 * pos + 1) {
-            Some(hashed_left) => match self.tree.get(2 * pos + 2) {
+        let pos_hash = self.elements[pos].clone();
+        let result = match self.elements.get(2 * pos + 1) {
+            Some(hashed_left) => match self.elements.get(2 * pos + 2) {
                 Some(hashed_right) => MerkleTree::combine_hashes(hashed_left, hashed_right),
                 None => hashed_left.to_string(),
             },
             None => pos_hash,
         };
 
-        self.tree[pos] = result;
+        self.elements[pos] = result;
     }
 
     /// The logic is: From the leaf, hashing with the proofs I reach my own root and compare it to the original
@@ -149,7 +149,7 @@ impl MerkleTree {
 
         MerkleTree::generate_root(proof, &mut hash, index);
 
-        hash == self.tree[0]
+        hash == self.elements[0]
     }
 
     /// Here I do the combinations to reach the root
@@ -182,10 +182,10 @@ impl MerkleTree {
 
         while *index >= 1 {
             if *index % 2 == 0 {
-                proof.push(self.tree[*index - 1].clone());
+                proof.push(self.elements[*index - 1].clone());
                 even_offset = 1;
             } else {
-                proof.push(self.tree[*index + 1].clone());
+                proof.push(self.elements[*index + 1].clone());
                 even_offset = 0;
             }
 
@@ -197,7 +197,7 @@ impl MerkleTree {
 
     pub fn print(&self) {
         let levels = (0..)
-            .take_while(|&n| (1 << n) - 1 < self.tree.len())
+            .take_while(|&n| (1 << n) - 1 < self.elements.len())
             .count();
         for i in 0..levels {
             let level_nodes = 1 << i;
@@ -208,8 +208,8 @@ impl MerkleTree {
             print!("{:width$}", "", width = spaces);
 
             for j in begin..end {
-                if j < self.tree.len() {
-                    print!("{}..  ", self.tree[j].clone().split_at(3).0);
+                if j < self.elements.len() {
+                    print!("{}..  ", self.elements[j].clone().split_at(3).0);
                 }
             }
             println!();
@@ -240,7 +240,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hased_string_0, &hased_string_1);
 
         assert_eq!(1, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // e92a2fd865f0aada3a9b81de2ca576ae627c025dd282fc2be754f9dee4e234fd
     }
 
@@ -257,7 +257,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
         assert_eq!(1, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // 5a13e205575dc3d9a374dfe32941511e62f8cf900fb9df59cae9c17bd8b8ce15
     }
 
@@ -282,7 +282,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
         assert_eq!(2, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // d28d8deea9f793a014e668ea4050f34dc669cfc6084cd7bf3ba9ccdf62901cbf
     }
 
@@ -307,7 +307,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
         assert_eq!(2, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // 8b63c8eebf3c438a9e6aff8c860febfda5d28ab473faa6c6375a01009920b91d
     }
 
@@ -345,7 +345,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
         assert_eq!(3, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // 8b63c8eebf3c438a9e6aff8c860febfda5d28ab473faa6c6375a01009920b91d
     }
 
@@ -383,7 +383,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
         assert_eq!(3, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // 584d46bf1bfe774bca9d4f620d127a87a2f78a341001f5f644a2f5f153c82cad
     }
 
@@ -450,7 +450,7 @@ mod tests {
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
         assert_eq!(4, tree.depth);
-        assert_eq!(hashed_string_root, tree.tree[0]);
+        assert_eq!(hashed_string_root, tree.elements[0]);
         // 7d6aca7ece41a33246a1fe3d13dcf074b701aa43717a19a93047553fc38294b0
     }
 
@@ -576,7 +576,7 @@ mod tests {
         // The proof is the expected in a 2-depth tree
         let mut tree = MerkleTree::build(vec!["a", "b", "c", "d"], true);
 
-        println!("{:?}", tree.tree);
+        println!("{:?}", tree.elements);
         assert_eq!(
             vec![
                 "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(),
@@ -591,7 +591,7 @@ mod tests {
         // The proof is the expected in a 3 depth tree
         let mut tree = MerkleTree::build(vec!["a", "b", "c", "d", "e", "f", "g", "h"], true);
         let mut index = 1;
-        println!("{:?}", tree.tree);
+        println!("{:?}", tree.elements);
         assert_eq!(
             vec![
                 "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(),
