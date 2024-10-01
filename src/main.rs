@@ -56,6 +56,10 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
         }
         println!();
         
+    } else if args[0] == "print" {
+        tree.print();
+    } else {
+        println!("Command not recognized, type --help to see the available commands");
     }
 }
 

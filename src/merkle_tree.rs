@@ -148,6 +148,7 @@ impl MerkleTree {
         self.tree[pos] = result;
     }
 
+    /// The logic is: From the leaf, hashing with the proofs I reach my own root and compare it to the original 
     pub fn verify(&self, proof: Vec<String>, leaf: String, index: &mut i32) -> bool {
         let mut hash = leaf;
 
@@ -156,6 +157,7 @@ impl MerkleTree {
         hash == self.tree[0]
     }
 
+    /// Here I do the combinations to reach the root
     fn generate_root(proof: Vec<String>, hash: &mut String, index: &mut i32) {
         for proof_element in proof {
             if *index % 2 == 0 {
@@ -172,6 +174,7 @@ impl MerkleTree {
         self.depth
     }
 
+    /// Made a similar advance to the verify method, but here I save the sibling instead of rehashing
     pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
 
@@ -192,6 +195,29 @@ impl MerkleTree {
         }
 
         proof
+    }
+
+    pub fn print(&self) {
+        let niveles = (0..).take_while(|&n| (1 << n) - 1 < self.tree.len()).count();
+        for i in 0..niveles {
+            let nodos_en_nivel = 1 << i; // 2^i
+            let inicio = (1 << i) - 1; // Índice del primer nodo en el nivel i
+            let fin = inicio + nodos_en_nivel;
+    
+            // Imprime espacios antes de los nodos para centrar
+            let espacios = (2 << (niveles - i - 1)) - 1; // 2^(niveles-i-1) - 1
+            print!("{:width$}", "", width = espacios);
+    
+            // Imprime los nodos
+            for j in inicio..fin {
+                if j < self.tree.len() {
+                    print!("{}..  ", self.tree[j].clone().split_at(3).0);
+                }
+            }
+            println!(); // Nueva línea al final del nivel
+        }
+
+        
     }
 }
 
