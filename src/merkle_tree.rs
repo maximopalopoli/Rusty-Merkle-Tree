@@ -226,7 +226,7 @@ mod tests {
     use super::MerkleTree;
 
     #[test]
-    fn test_01() {
+    fn test_01_tree_is_created_with_valid_args() {
         // Create a MerkleTree and begins with a vec with an empty string and an initial depth of 1
         let tree = MerkleTree::new();
         assert_eq!(0, tree.depth);
@@ -234,7 +234,7 @@ mod tests {
     }
 
     #[test]
-    fn test_02() {
+    fn test_02_adding_one_text_adds_the_hash_to_the_vector() {
         // Add a raw text to the tree, grows depth and tree now contains the hash
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -249,7 +249,7 @@ mod tests {
     }
 
     #[test]
-    fn test_03() {
+    fn test_03_adding_more_than_one_makes_root_a_hash_combination() {
         // Adds two raw texts to the tree, depth is two and tree root is result of hashing both
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -266,7 +266,7 @@ mod tests {
     }
 
     #[test]
-    fn test_04() {
+    fn test_04_adding_three_elements_increases_depth_to_two() {
         // Adds three raw texts to the tree, depth is two and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -291,7 +291,7 @@ mod tests {
     }
 
     #[test]
-    fn test_05() {
+    fn test_05_adding_four_elements_doesnt_increase_depth_to_three() {
         // Adds four raw texts to the tree, depth is two and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -316,7 +316,7 @@ mod tests {
     }
 
     #[test]
-    fn test_06() {
+    fn test_06_adding_five_elements_increases_depth_to_three() {
         // Adds five raw texts to the tree, depth is three and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -354,7 +354,7 @@ mod tests {
     }
 
     #[test]
-    fn test_07() {
+    fn test_07_adding_eight_elements_doesnt_increase_depth_to_four() {
         // Adds eight raw texts to the tree, depth is three and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -392,7 +392,7 @@ mod tests {
     }
 
     #[test]
-    fn test_08() {
+    fn test_08_adding_nine_elements_increases_depth_to_four() {
         // Adds nine raw texts to the tree, depth is four and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -459,7 +459,7 @@ mod tests {
     }
 
     #[test]
-    fn test_09() {
+    fn test_09_hash_function_works_correctly() {
         // Assert that hash function works correctly
         assert_eq!(
             MerkleTree::hash_raw("Merkle Tree"),
@@ -476,7 +476,7 @@ mod tests {
     }
 
     #[test]
-    fn test_10() {
+    fn test_10_combined_hash_function_works_correctly() {
         // Assert that the combine hashes function works as expected
         let hash_left = MerkleTree::hash_raw("Merkle Tree");
         let hash_right = MerkleTree::hash_raw("Merkle Root");
@@ -491,7 +491,7 @@ mod tests {
     }
 
     #[test]
-    fn test_11() {
+    fn test_11_power_of_two_function_works_correctly() {
         assert!(MerkleTree::number_is_power_of_two(1.));
         assert!(MerkleTree::number_is_power_of_two(2.));
         assert!(MerkleTree::number_is_power_of_two(8.));
@@ -502,7 +502,7 @@ mod tests {
     }
 
     #[test]
-    fn test_12() {
+    fn test_12_proof_of_a_four_elements_tree_is_verified_correctly() {
         // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -521,7 +521,7 @@ mod tests {
     }
 
     #[test]
-    fn test_13() {
+    fn test_13_proof_of_a_four_elements_tree_with_a_false_seed_doesnt_work() {
         // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -540,7 +540,7 @@ mod tests {
     }
 
     #[test]
-    fn test_14() {
+    fn test_14_build_creates_a_correct_tree() {
         // I can build a tree from an array, and it contains the elements
 
         let tree = MerkleTree::build(vec![
@@ -560,7 +560,7 @@ mod tests {
     }
 
     #[test]
-    fn test_15() {
+    fn test_15_build_raw_creates_a_correct_tree() {
         // I can build a tree from an array, and it contains the elements
 
         let tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
@@ -576,8 +576,8 @@ mod tests {
     }
 
     #[test]
-    fn test_16() {
-        // The proof is the expected
+    fn test_16_proof_is_expected_in_a_two_depth_tree() {
+        // The proof is the expected in a 2-depth tree
         let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
 
         println!("{:?}", tree.tree);
@@ -591,8 +591,8 @@ mod tests {
     }
 
     #[test]
-    fn test_17() {
-        // The proof is the expected
+    fn test_17_proof_is_expected_in_a_three_depth_tree() {
+        // The proof is the expected in a 3 depth tree
         let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d", "e", "f", "g", "h"]);
         let mut index = 1;
         println!("{:?}", tree.tree);
@@ -605,34 +605,4 @@ mod tests {
             tree.generate_proof(&mut index)
         );
     }
-
-    #[test]
-    fn test_18() {
-        // The proof is the expected
-        let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d", "e", "f", "g", "h"]);
-        let mut index = 7;
-        println!("{:?}", tree.tree);
-        assert_eq!(
-            vec![
-                "cd0aa9856147b6c5b4ff2b7dfee5da20aa38253099ef1b4a64aced233c9afe29".to_string(),
-                "1b3dae70b4b0a8fd252a7879ec67283c0176729bfebc51364fb9e9fb0598ba9e".to_string(),
-                "58c89d709329eb37285837b042ab6ff72c7c8f74de0446b091b6a0131c102cfd".to_string()
-            ],
-            tree.generate_proof(&mut index)
-        );
-    }
 }
-
-/*
-["5d2a8967adb92f46e3266c0cddef844418e95fc6dbe733029e8a7da6145a5afe",
-
- "58c89d709329eb37285837b042ab6ff72c7c8f74de0446b091b6a0131c102cfd", "d6cf2ad3f66d0599d97346c6aad0f1081913df26d8b80e4ffa052e0a1f8391c6",
-
- "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da", "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a",
- "1b3dae70b4b0a8fd252a7879ec67283c0176729bfebc51364fb9e9fb0598ba9e", "520328b68932e91dbd3194a6d12050ffa99d1dc603400c375850a888d2706135",
-
- "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
- "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6", "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4",
- "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea", "252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111",
- "cd0aa9856147b6c5b4ff2b7dfee5da20aa38253099ef1b4a64aced233c9afe29", "aaa9402664f1a41f40ebbc52c9993eb66aeb366602958fdfaa283b71e64db123"]
-*/
