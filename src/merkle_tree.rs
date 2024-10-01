@@ -26,21 +26,16 @@ impl MerkleTree {
         }
     }
 
-    pub fn build(hashes: Vec<&str>) -> Self {
+    pub fn build(hashes: Vec<&str>, raw: bool) -> Self {
         let mut tree = MerkleTree::new();
 
         for hash in hashes {
-            tree.add(hash.to_string());
-        }
-
-        tree
-    }
-
-    pub fn build_raw(hashes: Vec<&str>) -> Self {
-        let mut tree = MerkleTree::new();
-
-        for hash in hashes {
-            tree.add_raw(hash.to_string());
+            if raw {
+                tree.add_raw(hash.to_string());
+            } else {
+                tree.add(hash.to_string());
+            }
+            
         }
 
         tree
@@ -200,18 +195,18 @@ impl MerkleTree {
     }
 
     pub fn print(&self) {
-        let niveles = (0..)
+        let levels = (0..)
             .take_while(|&n| (1 << n) - 1 < self.tree.len())
             .count();
-        for i in 0..niveles {
-            let nodos_en_nivel = 1 << i;
-            let inicio = (1 << i) - 1;
-            let fin = inicio + nodos_en_nivel;
+        for i in 0..levels {
+            let level_nodes = 1 << i;
+            let begin = (1 << i) - 1;
+            let end = begin + level_nodes;
 
-            let espacios = (2 << (niveles - i - 1)) - 1;
-            print!("{:width$}", "", width = espacios);
+            let spaces = (2 << (levels - i - 1)) - 1;
+            print!("{:width$}", "", width = spaces);
 
-            for j in inicio..fin {
+            for j in begin..end {
                 if j < self.tree.len() {
                     print!("{}..  ", self.tree[j].clone().split_at(3).0);
                 }
@@ -547,7 +542,7 @@ mod tests {
             "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
             "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
             "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
-        ]);
+        ], false);
 
         assert!(tree.verify(
             vec![
@@ -563,7 +558,7 @@ mod tests {
     fn test_15_build_raw_creates_a_correct_tree() {
         // I can build a tree from an array, and it contains the elements
 
-        let tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
+        let tree = MerkleTree::build(vec!["a", "b", "c", "d"], true);
 
         assert!(tree.verify(
             vec![
@@ -578,7 +573,7 @@ mod tests {
     #[test]
     fn test_16_proof_is_expected_in_a_two_depth_tree() {
         // The proof is the expected in a 2-depth tree
-        let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
+        let mut tree = MerkleTree::build(vec!["a", "b", "c", "d"], true);
 
         println!("{:?}", tree.tree);
         assert_eq!(
@@ -593,7 +588,7 @@ mod tests {
     #[test]
     fn test_17_proof_is_expected_in_a_three_depth_tree() {
         // The proof is the expected in a 3 depth tree
-        let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d", "e", "f", "g", "h"]);
+        let mut tree = MerkleTree::build(vec!["a", "b", "c", "d", "e", "f", "g", "h"], true);
         let mut index = 1;
         println!("{:?}", tree.tree);
         assert_eq!(
