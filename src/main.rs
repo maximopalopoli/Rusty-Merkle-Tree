@@ -3,7 +3,6 @@ use merkle_tree::MerkleTree;
 
 fn process_comands(line: String, tree: &mut MerkleTree) {
     let args: Vec<&str> = line.split_ascii_whitespace().collect();
-    println!("{args:?}");
     // Note: There's no error checking, most of them out of bounds errors
 
     if args[0] == "--help" {
@@ -13,6 +12,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
         println!("  add - Usage: add 32-bytes-hash");
         println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
         println!("  proof - Usage: proof index");
+        println!("  print - Usage: print");
     } else if args[0] == "build" {
         // Usage: build <hash-1> <hash-2> ... <hash-n>
         let hashes: Vec<&str> = Vec::from(&args[1..]);
@@ -68,7 +68,6 @@ fn main() {
     loop {
         let mut input_line = String::new();
         let bytes_read = std::io::stdin().read_line(&mut input_line).unwrap();
-        println!("{bytes_read}");
         if bytes_read <= 1 {
             return;
         }
