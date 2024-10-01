@@ -176,19 +176,20 @@ impl MerkleTree {
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
         *index += non_leaf_nodes;
 
+        // raises a never read error, but IMO it's not a real problem
         #[allow(unused_assignments)]
-        let mut amount_affect = 0;
+        let mut even_offset = 0; // Exists for handling the climbing of the tree to the root
 
         while *index >= 1 {
             if *index % 2 == 0 {
                 proof.push(self.tree[*index - 1].clone());
-                amount_affect = 1;
+                even_offset = 1;
             } else {
                 proof.push(self.tree[*index + 1].clone());
-                amount_affect = 0;
+                even_offset = 0;
             }
 
-            *index = *index / 2 - amount_affect;
+            *index = *index / 2 - even_offset;
         }
 
         proof
