@@ -172,7 +172,7 @@ impl MerkleTree {
         self.depth
     }
 
-    fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
+    pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
 
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;

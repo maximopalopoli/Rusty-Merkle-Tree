@@ -4,6 +4,7 @@ use merkle_tree::MerkleTree;
 fn process_comands(line: String, tree: &mut MerkleTree) {
     let args: Vec<&str> = line.split_ascii_whitespace().collect();
     println!("{args:?}");
+    // Note: There's no error checking, most of them out of bounds errors
 
     if args[0] == "--help" {
         println!("  build - Usage: build <hash-1> <hash-2> ... <hash-n>");
@@ -11,6 +12,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
         println!("  add-raw - Usage: add-raw raw-text");
         println!("  add - Usage: add 32-bytes-hash");
         println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
+        println!("  proof - Usage: proof index");
     } else if args[0] == "build" {
         // Usage: build <hash-1> <hash-2> ... <hash-n>
         let hashes: Vec<&str> = Vec::from(&args[1..]);
@@ -45,6 +47,15 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
             println!("Proof has not been verified");
         }
         // example: verify 5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736 9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37 cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952 0
+    } else if args[0] == "proof" {
+        // Usage: proof <index>
+        let mut index = args[1].parse::<usize>().unwrap();
+        let response = tree.generate_proof(&mut index);
+        for hash in response {
+            print!("{hash} ");
+        }
+        println!();
+        
     }
 }
 
