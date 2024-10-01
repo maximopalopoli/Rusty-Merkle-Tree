@@ -8,14 +8,6 @@ An implementation of [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree) in
 To see the available commands.
 Usage: `--help`
 
-        println!("  build - Usage: build <hash-1> <hash-2> ... <hash-n>");
-        println!("  build-raw - Usage: build-raw <raw-text-1> <raw-text-2> ... <raw-text-n>");
-        println!("  add-raw - Usage: add-raw raw-text");
-        println!("  add - Usage: add 32-bytes-hash");
-        println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
-        println!("  proof - Usage: proof index");
-        println!("  print - Usage: print");
-
 ### build
 To create a Merkle Tree from a set of hashes.
 Usage: `build <hash-1> <hash-2> ... <hash-n>`
