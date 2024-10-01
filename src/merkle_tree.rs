@@ -148,7 +148,7 @@ impl MerkleTree {
         self.tree[pos] = result;
     }
 
-    /// The logic is: From the leaf, hashing with the proofs I reach my own root and compare it to the original 
+    /// The logic is: From the leaf, hashing with the proofs I reach my own root and compare it to the original
     pub fn verify(&self, proof: Vec<String>, leaf: String, index: &mut i32) -> bool {
         let mut hash = leaf;
 
@@ -180,14 +180,16 @@ impl MerkleTree {
 
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
         *index += non_leaf_nodes;
+
+        #[allow(unused_assignments)]
         let mut amount_affect = 0;
 
         while *index >= 1 {
             if *index % 2 == 0 {
-                proof.push(self.tree[*index-1].clone());
+                proof.push(self.tree[*index - 1].clone());
                 amount_affect = 1;
             } else {
-                proof.push(self.tree[*index+1].clone());
+                proof.push(self.tree[*index + 1].clone());
                 amount_affect = 0;
             }
 
@@ -198,29 +200,26 @@ impl MerkleTree {
     }
 
     pub fn print(&self) {
-        let niveles = (0..).take_while(|&n| (1 << n) - 1 < self.tree.len()).count();
+        let niveles = (0..)
+            .take_while(|&n| (1 << n) - 1 < self.tree.len())
+            .count();
         for i in 0..niveles {
-            let nodos_en_nivel = 1 << i; // 2^i
-            let inicio = (1 << i) - 1; // Índice del primer nodo en el nivel i
+            let nodos_en_nivel = 1 << i;
+            let inicio = (1 << i) - 1;
             let fin = inicio + nodos_en_nivel;
-    
-            // Imprime espacios antes de los nodos para centrar
-            let espacios = (2 << (niveles - i - 1)) - 1; // 2^(niveles-i-1) - 1
+
+            let espacios = (2 << (niveles - i - 1)) - 1;
             print!("{:width$}", "", width = espacios);
-    
-            // Imprime los nodos
+
             for j in inicio..fin {
                 if j < self.tree.len() {
                     print!("{}..  ", self.tree[j].clone().split_at(3).0);
                 }
             }
-            println!(); // Nueva línea al final del nivel
+            println!();
         }
-
-        
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -629,11 +628,11 @@ mod tests {
 
  "58c89d709329eb37285837b042ab6ff72c7c8f74de0446b091b6a0131c102cfd", "d6cf2ad3f66d0599d97346c6aad0f1081913df26d8b80e4ffa052e0a1f8391c6",
 
- "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da", "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a", 
- "1b3dae70b4b0a8fd252a7879ec67283c0176729bfebc51364fb9e9fb0598ba9e", "520328b68932e91dbd3194a6d12050ffa99d1dc603400c375850a888d2706135", 
- 
- "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d", 
- "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6", "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4", 
- "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea", "252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111", 
+ "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da", "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a",
+ "1b3dae70b4b0a8fd252a7879ec67283c0176729bfebc51364fb9e9fb0598ba9e", "520328b68932e91dbd3194a6d12050ffa99d1dc603400c375850a888d2706135",
+
+ "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+ "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6", "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4",
+ "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea", "252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111",
  "cd0aa9856147b6c5b4ff2b7dfee5da20aa38253099ef1b4a64aced233c9afe29", "aaa9402664f1a41f40ebbc52c9993eb66aeb366602958fdfaa283b71e64db123"]
 */

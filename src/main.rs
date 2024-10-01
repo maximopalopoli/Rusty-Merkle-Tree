@@ -30,12 +30,12 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
         tree.add_raw(args[1].to_string());
         // example: add John-Conway
     }
-    // Note: Still doesn't support blank_spaces in raw-text. TODO
+    // Note: Doesn't support blank_spaces in raw-text yet. TODO
     else if args[0] == "verify" {
         // Usage: verify proof1 proof2 ... proofN seed index
         let mut proof = Vec::new();
-        for i in 1..(1 + tree.depth()) {
-            proof.push(args[i].to_string());
+        for item in args.iter().skip(1).take(tree.depth()) {
+            proof.push((*item).to_string());
         }
         let leaf = args[1 + tree.depth()].to_string();
 
@@ -55,7 +55,6 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
             print!("{hash} ");
         }
         println!();
-        
     } else if args[0] == "print" {
         tree.print();
     } else {
