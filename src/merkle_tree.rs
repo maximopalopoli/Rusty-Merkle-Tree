@@ -6,7 +6,7 @@ pub struct MerkleTree {
     elements: Vec<String>,
     /// How deep reaches the table from the root to the leaves
     depth: usize,
-    /// Ammount of elements
+    /// Ammount of inserted leaf nodes (without reapeated ones)
     amount: usize,
 }
 
