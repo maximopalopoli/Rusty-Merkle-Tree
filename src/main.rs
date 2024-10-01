@@ -7,7 +7,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
 
     if args[0] == "--help" {
         println!("  build - Usage: build <hash-1> <hash-2> ... <hash-n>");
-        println!("  build - Usage: build-raw <raw-text-1> <raw-text-2> ... <raw-text-n>");
+        println!("  build-raw - Usage: build-raw <raw-text-1> <raw-text-2> ... <raw-text-n>");
         println!("  add-raw - Usage: add-raw raw-text");
         println!("  add - Usage: add 32-bytes-hash");
         println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
