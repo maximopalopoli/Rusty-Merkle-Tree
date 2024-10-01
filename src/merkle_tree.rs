@@ -148,7 +148,7 @@ impl MerkleTree {
         self.tree[pos] = result;
     }
 
-    pub fn verify(&self ,proof: Vec<String>, leaf: String, index: &mut i32) -> bool {
+    pub fn verify(&self, proof: Vec<String>, leaf: String, index: &mut i32) -> bool {
         let mut hash = leaf;
 
         MerkleTree::generate_root(proof, &mut hash, index);
@@ -176,93 +176,22 @@ impl MerkleTree {
         let mut proof: Vec<String> = Vec::new();
 
         let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
-        let leaves = self.tree[non_leaf_nodes..].into();
-        println!("{:?} \n", leaves);
+        *index += non_leaf_nodes;
+        let mut amount_affect = 0;
 
-        if let Some(root) = build_merkle_tree(leaves) {
-            let rut = root.clone();
-            generate_proof(&Some(Box::new(root)), *index, &mut proof);
-            println!("Root es: {:?} \n", rut);
-        };
+        while *index >= 1 {
+            if *index % 2 == 0 {
+                proof.push(self.tree[*index-1].clone());
+                amount_affect = 1;
+            } else {
+                proof.push(self.tree[*index+1].clone());
+                amount_affect = 0;
+            }
 
-        proof.reverse();
+            *index = *index / 2 - amount_affect;
+        }
 
         proof
-    }
-}
-
-#[derive(Debug, Clone)]
-struct MerkleNode {
-    hash: String,
-    left: Option<Box<MerkleNode>>,
-    right: Option<Box<MerkleNode>>,
-}
-
-impl MerkleNode {
-    fn new(hash: String) -> Self {
-        MerkleNode {
-            hash,
-            left: None,
-            right: None,
-        }
-    }
-
-    fn combine(left: &MerkleNode, right: &MerkleNode) -> Self {
-        let mut hasher = Sha256::new();
-        hasher.update(&left.hash);
-        hasher.update(&right.hash);
-        let combined_hash = hasher.finalize().to_vec();
-        let hash = hex::encode(combined_hash);
-        MerkleNode {
-            hash,
-            left: Some(Box::new(left.clone())),
-            right: Some(Box::new(right.clone())),
-        }
-    }
-}
-
-fn build_merkle_tree(data: Vec<String>) -> Option<MerkleNode> {
-    if data.is_empty() {
-        return None;
-    }
-
-    let mut nodes: Vec<MerkleNode> = data.into_iter().map(MerkleNode::new).collect();
-    
-    while nodes.len() > 1 {
-        let mut parent_nodes = vec![];
-        for chunk in nodes.chunks(2) {
-            let left = &chunk[0];
-            let right = chunk.get(1).unwrap_or(left);
-            parent_nodes.push(MerkleNode::combine(left, right));
-        }
-        nodes = parent_nodes;
-    }
-    
-    nodes.into_iter().next()
-}
-
-fn generate_proof(tree: &Option<Box<MerkleNode>>, index: usize, proof: &mut Vec<String>) {
-    if let Some(node) = tree {
-        println!("Estoy en el nodo de {}", node.hash);
-        if node.left.is_none() && node.right.is_none() {
-            return;
-        }
-
-        if index % 2 == 0 {
-            if let Some(left) = &node.left {
-                proof.push(left.hash.clone());
-            }
-        } else {
-            if let Some(right) = &node.right {
-                proof.push(right.hash.clone());
-            }
-        }
-
-        if index % 2 == 0 {
-            generate_proof(&node.right, index / 2, proof);
-        } else {
-            generate_proof(&node.left, index / 2, proof);
-        }
     }
 }
 
@@ -548,7 +477,7 @@ mod tests {
     }
 
     #[test]
-    fn test_12 () {
+    fn test_12() {
         // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -556,13 +485,18 @@ mod tests {
         tree.add_raw("Game of Life".to_string());
         tree.add_raw("John Conway".to_string());
 
-        assert!(
-     tree.verify(vec!["5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(), "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()], "cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952".to_string(), &mut 0) )
-
+        assert!(tree.verify(
+            vec![
+                "5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(),
+                "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()
+            ],
+            "cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952".to_string(),
+            &mut 0
+        ))
     }
 
     #[test]
-    fn test_13 () {
+    fn test_13() {
         // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
         let mut tree = MerkleTree::new();
         tree.add_raw("Merkle Tree".to_string());
@@ -570,37 +504,110 @@ mod tests {
         tree.add_raw("Game of Life".to_string());
         tree.add_raw("John Conway".to_string());
 
-        assert!(!tree.verify(vec!["5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(), "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()], "not_a_seed".to_string(), &mut 0) )
+        assert!(!tree.verify(
+            vec![
+                "5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736".to_string(),
+                "9630101c1c273a6c4714cc7388f35cd7f1b547bf3bc740caf3d943e33e0a9c37".to_string()
+            ],
+            "not_a_seed".to_string(),
+            &mut 0
+        ))
     }
 
     #[test]
-    fn test_14 () {
+    fn test_14() {
         // I can build a tree from an array, and it contains the elements
 
-        let tree = MerkleTree::build(vec!["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d", "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6"]);
+        let tree = MerkleTree::build(vec![
+            "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+            "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
+        ]);
 
-
-        assert!(
-            tree.verify(vec!["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(), "d50c873877f38fcbc56dbe836b9d979912efcb587ed8eea919372d403b5c2bd4".to_string()], "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d".to_string(), &mut 1) )
+        assert!(tree.verify(
+            vec![
+                "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(),
+                "d50c873877f38fcbc56dbe836b9d979912efcb587ed8eea919372d403b5c2bd4".to_string()
+            ],
+            "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d".to_string(),
+            &mut 1
+        ))
     }
 
     #[test]
-    fn test_15 () {
+    fn test_15() {
         // I can build a tree from an array, and it contains the elements
 
         let tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
 
-
-        assert!(
-            tree.verify(vec!["2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6".to_string(), "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da".to_string()], "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4".to_string(), &mut 3) )
+        assert!(tree.verify(
+            vec![
+                "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6".to_string(),
+                "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da".to_string()
+            ],
+            "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4".to_string(),
+            &mut 3
+        ))
     }
 
     #[test]
-    fn test_16 () {
+    fn test_16() {
         // The proof is the expected
         let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d"]);
 
         println!("{:?}", tree.tree);
-        assert_eq!(vec!["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(), "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a".to_string()], tree.generate_proof(&mut 1))
+        assert_eq!(
+            vec![
+                "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(),
+                "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a".to_string()
+            ],
+            tree.generate_proof(&mut 1)
+        );
+    }
+
+    #[test]
+    fn test_17() {
+        // The proof is the expected
+        let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d", "e", "f", "g", "h"]);
+        let mut index = 1;
+        println!("{:?}", tree.tree);
+        assert_eq!(
+            vec![
+                "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb".to_string(),
+                "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a".to_string(),
+                "d6cf2ad3f66d0599d97346c6aad0f1081913df26d8b80e4ffa052e0a1f8391c6".to_string()
+            ],
+            tree.generate_proof(&mut index)
+        );
+    }
+
+    #[test]
+    fn test_18() {
+        // The proof is the expected
+        let mut tree = MerkleTree::build_raw(vec!["a", "b", "c", "d", "e", "f", "g", "h"]);
+        let mut index = 7;
+        println!("{:?}", tree.tree);
+        assert_eq!(
+            vec![
+                "cd0aa9856147b6c5b4ff2b7dfee5da20aa38253099ef1b4a64aced233c9afe29".to_string(),
+                "1b3dae70b4b0a8fd252a7879ec67283c0176729bfebc51364fb9e9fb0598ba9e".to_string(),
+                "58c89d709329eb37285837b042ab6ff72c7c8f74de0446b091b6a0131c102cfd".to_string()
+            ],
+            tree.generate_proof(&mut index)
+        );
     }
 }
+
+/*
+["5d2a8967adb92f46e3266c0cddef844418e95fc6dbe733029e8a7da6145a5afe",
+
+ "58c89d709329eb37285837b042ab6ff72c7c8f74de0446b091b6a0131c102cfd", "d6cf2ad3f66d0599d97346c6aad0f1081913df26d8b80e4ffa052e0a1f8391c6",
+
+ "62af5c3cb8da3e4f25061e829ebeea5c7513c54949115b1acc225930a90154da", "d3a0f1c792ccf7f1708d5422696263e35755a86917ea76ef9242bd4a8cf4891a", 
+ "1b3dae70b4b0a8fd252a7879ec67283c0176729bfebc51364fb9e9fb0598ba9e", "520328b68932e91dbd3194a6d12050ffa99d1dc603400c375850a888d2706135", 
+ 
+ "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d", 
+ "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6", "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4", 
+ "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea", "252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111", 
+ "cd0aa9856147b6c5b4ff2b7dfee5da20aa38253099ef1b4a64aced233c9afe29", "aaa9402664f1a41f40ebbc52c9993eb66aeb366602958fdfaa283b71e64db123"]
+*/

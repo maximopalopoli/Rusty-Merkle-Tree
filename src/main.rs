@@ -11,37 +11,33 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
         println!("  add-raw - Usage: add-raw raw-text");
         println!("  add - Usage: add 32-bytes-hash");
         println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
-    }
-
-    else if args[0] == "build" { // Usage: build <hash-1> <hash-2> ... <hash-n>
+    } else if args[0] == "build" {
+        // Usage: build <hash-1> <hash-2> ... <hash-n>
         let hashes: Vec<&str> = Vec::from(&args[1..]);
         *tree = MerkleTree::build(hashes);
-    }
-
-    else if args[0] == "build-raw" { // Usage: build <raw-text-1> <raw-text-2> ... <raw-text-n>
+    } else if args[0] == "build-raw" {
+        // Usage: build <raw-text-1> <raw-text-2> ... <raw-text-n>
         let hashes: Vec<&str> = Vec::from(&args[1..]);
         *tree = MerkleTree::build_raw(hashes);
-    }
-
-    else if args[0] == "add" { // Usage: add hash
+    } else if args[0] == "add" {
+        // Usage: add hash
         tree.add(args[1].to_string());
         // example: add cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952
-    }
-
-    else if args[0] == "add-raw" { // Usage: add-raw raw-text
+    } else if args[0] == "add-raw" {
+        // Usage: add-raw raw-text
         tree.add_raw(args[1].to_string());
         // example: add John-Conway
     }
     // Note: Still doesn't support blank_spaces in raw-text. TODO
-
-    else if args[0] == "verify" { // Usage: verify proof1 proof2 ... proofN seed index
+    else if args[0] == "verify" {
+        // Usage: verify proof1 proof2 ... proofN seed index
         let mut proof = Vec::new();
-        for i in 1..(1 + tree.depth()){
+        for i in 1..(1 + tree.depth()) {
             proof.push(args[i].to_string());
         }
-        let leaf = args[1+tree.depth()].to_string();
+        let leaf = args[1 + tree.depth()].to_string();
 
-        let mut index: i32 = args[1+tree.depth()+1].to_string().parse().unwrap();
+        let mut index: i32 = args[1 + tree.depth() + 1].to_string().parse().unwrap();
 
         if tree.verify(proof, leaf, &mut index) {
             println!("Proof has been verified");
@@ -63,7 +59,7 @@ fn main() {
             return;
         }
         // TODO: Error checking instead of .unwrap()
-        
+
         process_comands(input_line, &mut tree);
-    }    
+    }
 }
