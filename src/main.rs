@@ -1,9 +1,10 @@
 pub mod merkle_tree;
+use std::num::ParseIntError;
+
 use merkle_tree::MerkleTree;
 
-fn process_comands(line: String, tree: &mut MerkleTree) {
+fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), ParseIntError> {
     let args: Vec<&str> = line.split_ascii_whitespace().collect();
-    // Note: There's no error checking, most of them out of bounds errors
 
     match args[0] {
         "--help" => {
@@ -43,7 +44,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
             }
             let leaf = args[1 + tree.depth()].to_string();
 
-            let mut index: i32 = args[1 + tree.depth() + 1].to_string().parse().unwrap();
+            let mut index = args[1 + tree.depth() + 1].to_string().parse()?;
 
             if tree.verify(proof, leaf, &mut index) {
                 println!("Proof has been verified");
@@ -54,7 +55,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
         },
         "proof" => {
             // Usage: proof <index>
-            let mut index = args[1].parse::<usize>().unwrap();
+            let mut index = args[1].parse::<usize>()?;
             let response = tree.generate_proof(&mut index);
             for hash in response {
                 print!("{hash} ");
@@ -68,6 +69,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) {
             println!("Command not recognized, type --help to see the available commands");
         }
     }
+    Ok(())
 }
 
 fn main() {
@@ -75,12 +77,17 @@ fn main() {
     let mut tree = MerkleTree::new();
     loop {
         let mut input_line = String::new();
-        let bytes_read = std::io::stdin().read_line(&mut input_line).unwrap();
-        if bytes_read <= 1 {
+        if let Ok(bytes_read) = std::io::stdin().read_line(&mut input_line) {
+            if bytes_read <= 1 {
+                return;
+            }
+        } else {
+            println!("Could not receive from stdin");
             return;
         }
-        // TODO: Error checking instead of .unwrap()
 
-        process_comands(input_line, &mut tree);
+        if let Err(e) = process_comands(input_line, &mut tree) {
+            println!("{}", e)
+        }
     }
 }
