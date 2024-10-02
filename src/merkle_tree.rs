@@ -35,7 +35,6 @@ impl MerkleTree {
             } else {
                 tree.add(hash.to_string());
             }
-            
         }
 
         tree
@@ -540,11 +539,14 @@ mod tests {
     fn test_14_build_creates_a_correct_tree() {
         // I can build a tree from an array, and it contains the elements
 
-        let tree = MerkleTree::build(vec![
-            "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
-            "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
-            "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
-        ], false);
+        let tree = MerkleTree::build(
+            vec![
+                "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+                "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+                "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
+            ],
+            false,
+        );
 
         assert!(tree.verify(
             vec![
