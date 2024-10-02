@@ -99,9 +99,9 @@ impl MerkleTree {
 
     /// Decided to insert all the copies to the tree when needed to fill spaces
     fn insert_hash(&mut self, hashed_string: String) {
-        let gap = 2_i8.pow(self.depth() as u32 + 1) - (self.amount + 1) as i8;
+        let non_leaf_nodes = 2_usize.pow(f32::log2(self.amount as f32) as u32 + 1) - 1;
 
-        let non_leaf_nodes = 2_i8.pow(self.depth() as u32 + 1) as usize - 1;
+        let gap = non_leaf_nodes - self.amount;
         let amount_of_copies = self.elements.len() - self.amount - non_leaf_nodes;
 
         if gap > 0 && amount_of_copies == 0 {
@@ -166,14 +166,14 @@ impl MerkleTree {
 
     // Calculate based in amount of inserted elements and not in all elements bc in the second case i'd have to make a vec.len
     pub fn depth(&self) -> usize {
-        f32::log2(self.amount as f32) as usize
+        self.depth
     }
 
     /// Made a similar advance to the verify method, but here I save the sibling instead of rehashing
     pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
 
-        let non_leaf_nodes = 2_i8.pow(self.depth() as u32) as usize - 1;
+        let non_leaf_nodes = 2_i8.pow(f32::log2(self.amount as f32) as u32) as usize - 1;
         *index += non_leaf_nodes;
 
         // raises a never read error, but IMO it's not a real problem
