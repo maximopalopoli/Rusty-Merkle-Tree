@@ -1,6 +1,6 @@
 use std::num::ParseIntError;
 
-pub enum UserInterfaceErrors{
+pub enum UserInterfaceErrors {
     NotEnoughArgumentsError(String),
-    NotCorrectTypeError(ParseIntError)
+    NotCorrectTypeError(ParseIntError),
 }

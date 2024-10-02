@@ -1,8 +1,8 @@
-pub mod merkle_tree;
 pub mod errors;
+pub mod merkle_tree;
 
-use merkle_tree::MerkleTree;
 use errors::UserInterfaceErrors;
+use merkle_tree::MerkleTree;
 
 fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterfaceErrors> {
     let args: Vec<&str> = line.split_ascii_whitespace().collect();
@@ -32,7 +32,9 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
             if let Some(str) = args.get(1) {
                 tree.add(str.to_string());
             } else {
-                return Err(UserInterfaceErrors::NotEnoughArgumentsError("add hash".to_string()));
+                return Err(UserInterfaceErrors::NotEnoughArgumentsError(
+                    "add hash".to_string(),
+                ));
             }
         }
         "add-raw" => {
@@ -40,13 +42,17 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
             if let Some(str) = args.get(1) {
                 tree.add_raw(str.to_string());
             } else {
-                return Err(UserInterfaceErrors::NotEnoughArgumentsError("add-raw raw-text".to_string()));
+                return Err(UserInterfaceErrors::NotEnoughArgumentsError(
+                    "add-raw raw-text".to_string(),
+                ));
             }
         }
         "verify" => {
             // Usage: verify proof1 proof2 ... proofN seed index
             if args.len() < 4 {
-                return Err(UserInterfaceErrors::NotEnoughArgumentsError("verify proof1 proof2 ... proofN seed index".to_string()));
+                return Err(UserInterfaceErrors::NotEnoughArgumentsError(
+                    "verify proof1 proof2 ... proofN seed index".to_string(),
+                ));
             }
             let mut proof = Vec::new();
             for item in args.iter().skip(1).take(tree.depth()) {
@@ -55,7 +61,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
             let leaf = args[1 + tree.depth()].to_string();
 
             match args[1 + tree.depth() + 1].to_string().parse() {
-                Ok(mut index) =>  {
+                Ok(mut index) => {
                     if tree.verify(proof, leaf, &mut index) {
                         println!("Proof has been verified");
                     } else {
@@ -71,7 +77,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
             // Usage: proof <index>
             if let Some(str) = args.get(1) {
                 match str.parse::<usize>() {
-                    Ok(mut index) =>  {
+                    Ok(mut index) => {
                         let response = tree.generate_proof(&mut index);
                         for hash in response {
                             print!("{hash} ");
@@ -83,7 +89,9 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
                     }
                 }
             } else {
-                return Err(UserInterfaceErrors::NotEnoughArgumentsError("proof <index>".to_string()));
+                return Err(UserInterfaceErrors::NotEnoughArgumentsError(
+                    "proof <index>".to_string(),
+                ));
             }
         }
         "print" => {
@@ -114,10 +122,13 @@ fn main() {
         }
 
         let response = process_comands(input_line, &mut tree);
-        if let Err(UserInterfaceErrors::NotCorrectTypeError(e)) =  response{
+        if let Err(UserInterfaceErrors::NotCorrectTypeError(e)) = response {
             println!("{:?}", e);
         } else if let Err(UserInterfaceErrors::NotEnoughArgumentsError(usage)) = response {
-            println!("The amount of arguments is not the expected, usage: {}", usage);
+            println!(
+                "The amount of arguments is not the expected, usage: {}",
+                usage
+            );
         }
     }
 }

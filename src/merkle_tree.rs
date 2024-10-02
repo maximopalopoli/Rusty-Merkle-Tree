@@ -110,7 +110,7 @@ impl MerkleTree {
                 self.elements.push(hashed_string.clone());
             }
             self.elements.push(hashed_string.clone());
-        } else if gap <= 0 {
+        } else if gap == 0 {
             // When i replace the last copy element placed to fill the elements
             self.elements.pop();
             self.elements.push(hashed_string);
