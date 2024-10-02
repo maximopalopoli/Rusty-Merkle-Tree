@@ -46,7 +46,7 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
         "verify" => {
             // Usage: verify proof1 proof2 ... proofN seed index
             if args.len() < 4 {
-                return Err(UserInterfaceErrors::NotEnoughArgumentsError("verify proof1 proof2 ... proofN seed index".to_string() + ". Current tree depth: " + tree.depth().to_string().as_str()));
+                return Err(UserInterfaceErrors::NotEnoughArgumentsError("verify proof1 proof2 ... proofN seed index".to_string()));
             }
             let mut proof = Vec::new();
             for item in args.iter().skip(1).take(tree.depth()) {
@@ -97,9 +97,12 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
 }
 
 fn main() {
+    println!();
     println!("Welcome to this Merkle Tree simulator. Type --help to list the available commands");
     let mut tree = MerkleTree::new();
     loop {
+        println!();
+
         let mut input_line = String::new();
         if let Ok(bytes_read) = std::io::stdin().read_line(&mut input_line) {
             if bytes_read <= 1 {
