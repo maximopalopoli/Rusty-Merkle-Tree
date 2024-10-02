@@ -99,9 +99,9 @@ impl MerkleTree {
 
     /// Decided to insert all the copies to the tree when needed to fill spaces
     fn insert_hash(&mut self, hashed_string: String) {
-        let gap = 2_i8.pow(self.depth as u32) - (self.amount + 1) as i8;
+        let non_leaf_nodes = 2_usize.pow(f32::log2(self.amount as f32) as u32 + 1) - 1;
 
-        let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
+        let gap = non_leaf_nodes - self.amount;
         let amount_of_copies = self.elements.len() - self.amount - non_leaf_nodes;
 
         if gap > 0 && amount_of_copies == 0 {
@@ -110,7 +110,7 @@ impl MerkleTree {
                 self.elements.push(hashed_string.clone());
             }
             self.elements.push(hashed_string.clone());
-        } else if gap <= 0 {
+        } else if gap == 0 {
             // When i replace the last copy element placed to fill the elements
             self.elements.pop();
             self.elements.push(hashed_string);
@@ -164,6 +164,7 @@ impl MerkleTree {
         }
     }
 
+    // Calculate based in amount of inserted elements and not in all elements bc in the second case i'd have to make a vec.len
     pub fn depth(&self) -> usize {
         self.depth
     }
@@ -172,7 +173,7 @@ impl MerkleTree {
     pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
 
-        let non_leaf_nodes = 2_i8.pow(self.depth as u32) as usize - 1;
+        let non_leaf_nodes = 2_i8.pow(f32::log2(self.amount as f32) as u32) as usize - 1;
         *index += non_leaf_nodes;
 
         // raises a never read error, but IMO it's not a real problem
@@ -208,7 +209,7 @@ impl MerkleTree {
 
             for j in begin..end {
                 if j < self.elements.len() {
-                    print!("{}..  ", self.elements[j].clone().split_at(3).0);
+                    print!("{}..  ", self.elements[j].clone().split_at(4).0);
                 }
             }
             println!();
