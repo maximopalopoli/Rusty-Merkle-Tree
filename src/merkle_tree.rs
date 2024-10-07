@@ -613,4 +613,30 @@ mod tests {
             tree.generate_proof(&mut index)
         );
     }
+
+    #[test]
+    fn test_18_tree_supports_long_unhashed_texts() {
+        // Adds four unhashed long texts to the tree, depth is two and tree root is result of hashing all
+
+        let mut tree = MerkleTree::new();
+        tree.add_unhashed("Aliquam quis semper dolor. Nam egestas pharetra enim, in aliquet leo eleifend id. Fusce lacinia quam at libero condimentum, vitae fringilla ex volutpat. Nunc sollicitudin est eu lectus mattis hendrerit. Nam sit amet tristique sapien. Pellentesque sed lorem diam. Ut eu tempor elit.".to_string());
+        tree.add_unhashed("Ut augue ligula, tincidunt ut eleifend vitae, mattis nec lacus. Nunc id nunc ut diam dignissim varius. Etiam tincidunt iaculis purus et rhoncus. Curabitur eu venenatis ipsum. Nam lobortis, massa quis ultrices vulputate, magna elit posuere turpis, ut accumsan nunc dolor sed justo.".to_string());
+        tree.add_unhashed("Donec blandit viverra mi. Phasellus dapibus id neque quis eleifend. In sed metus laoreet tellus egestas fermentum ac vitae metus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vestibulum eget nisl id nisl accumsan consequat vitae a leo.".to_string());
+        tree.add_unhashed("Integer efficitur mollis justo in volutpat. Duis ac luctus libero. Donec scelerisque vestibulum sagittis. Mauris iaculis enim nec lectus condimentum porttitor. Fusce pharetra lobortis ipsum a vulputate.".to_string());
+
+        let hashed_string_00 = MerkleTree::hash_text("Aliquam quis semper dolor. Nam egestas pharetra enim, in aliquet leo eleifend id. Fusce lacinia quam at libero condimentum, vitae fringilla ex volutpat. Nunc sollicitudin est eu lectus mattis hendrerit. Nam sit amet tristique sapien. Pellentesque sed lorem diam. Ut eu tempor elit.");
+        let hashed_string_01 = MerkleTree::hash_text("Ut augue ligula, tincidunt ut eleifend vitae, mattis nec lacus. Nunc id nunc ut diam dignissim varius. Etiam tincidunt iaculis purus et rhoncus. Curabitur eu venenatis ipsum. Nam lobortis, massa quis ultrices vulputate, magna elit posuere turpis, ut accumsan nunc dolor sed justo.");
+
+        let hashed_string_10 = MerkleTree::hash_text("Donec blandit viverra mi. Phasellus dapibus id neque quis eleifend. In sed metus laoreet tellus egestas fermentum ac vitae metus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vestibulum eget nisl id nisl accumsan consequat vitae a leo.");
+        let hashed_string_11 = MerkleTree::hash_text("Integer efficitur mollis justo in volutpat. Duis ac luctus libero. Donec scelerisque vestibulum sagittis. Mauris iaculis enim nec lectus condimentum porttitor. Fusce pharetra lobortis ipsum a vulputate.");
+
+        let hashed_string_0 = MerkleTree::combine_hashes(&hashed_string_00, &hashed_string_01);
+        let hashed_string_1 = MerkleTree::combine_hashes(&hashed_string_10, &hashed_string_11);
+
+        let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
+
+        assert_eq!(2, tree.depth);
+        assert_eq!(hashed_string_root, tree.elements[0]);
+        // c567f133613aac1e0f011569c65daf490adbb87a87db7246ac045b79c64d1460
+    }
 }
