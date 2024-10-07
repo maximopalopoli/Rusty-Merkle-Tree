@@ -7,7 +7,7 @@ pub struct MerkleTree {
     /// How deep reaches the table from the root to the leaves
     depth: usize,
     /// Ammount of inserted leaf nodes (without reapeated ones)
-    amount: usize,
+    inserted_elements_amount: usize,
 }
 
 impl Default for MerkleTree {
@@ -22,7 +22,7 @@ impl MerkleTree {
         MerkleTree {
             elements,
             depth: 0,
-            amount: 0,
+            inserted_elements_amount: 0,
         }
     }
 
@@ -70,20 +70,23 @@ impl MerkleTree {
         self.rehash_tree(0);
     }
 
-    /// When depth increase is needed, then insert the middle hashes required to calculate all the leaf hashes of the level
+    /// When depth increase is needed, then insert the middle hash nodes required to calculate all the leaf hashes of the level
     fn expand_tree(&mut self) {
-        if self.amount == 0 {
+        if self.inserted_elements_amount == 0 {
             self.depth = 1;
             self.elements.insert(0, "".to_string());
         }
         // Needed this bc 1 is power of two and should not execute the logic that is inside the if
-        if self.amount == 1 {
+        if self.inserted_elements_amount == 1 {
             return;
         }
-        if MerkleTree::number_is_power_of_two(self.amount as f32) {
+        if MerkleTree::number_is_power_of_two(self.inserted_elements_amount as f32) {
             self.depth += 1;
-            for _ in 0..self.amount {
-                self.elements.insert(self.amount - 1, "".to_string());
+            // The need of the for is to insert the non_leaf_nodes that will be used to calculate the root hash
+            for i in 0..self.inserted_elements_amount {
+                // Note: self.inserted_elements_amount is a proxy of the number of copies
+                self.elements.insert(self.inserted_elements_amount - 1 + i, "".to_string());
+                // These are empty strings because they will be calculated in the rehash_tree function from lower nodes
             }
         }
     }
@@ -99,10 +102,10 @@ impl MerkleTree {
 
     /// Decided to insert all the copies to the tree when needed to fill spaces
     fn insert_hash(&mut self, hashed_string: String) {
-        let non_leaf_nodes = 2_usize.pow(f32::log2(self.amount as f32) as u32 + 1) - 1;
+        let non_leaf_nodes = 2_usize.pow(f32::log2(self.inserted_elements_amount as f32) as u32 + 1) - 1;
 
-        let gap = non_leaf_nodes - self.amount;
-        let amount_of_copies = self.elements.len() - self.amount - non_leaf_nodes;
+        let gap = non_leaf_nodes - self.inserted_elements_amount;
+        let amount_of_copies = self.elements.len() - self.inserted_elements_amount - non_leaf_nodes;
 
         if gap > 0 && amount_of_copies == 0 {
             // When i do insert and there are spaces left
@@ -118,10 +121,10 @@ impl MerkleTree {
             // When i replace copy element placed to fill the elements but it's not the last
             self.elements.pop();
             self.elements
-                .insert(non_leaf_nodes + self.amount, hashed_string);
+                .insert(non_leaf_nodes + self.inserted_elements_amount, hashed_string);
         }
 
-        self.amount += 1;
+        self.inserted_elements_amount += 1;
     }
 
     /// The logic is: First, insert the element, and then recalculate the middle hashes
@@ -173,7 +176,7 @@ impl MerkleTree {
     pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
 
-        let non_leaf_nodes = 2_i8.pow(f32::log2(self.amount as f32) as u32) as usize - 1;
+        let non_leaf_nodes = 2_i8.pow(f32::log2(self.inserted_elements_amount as f32) as u32) as usize - 1;
         *index += non_leaf_nodes;
 
         // raises a never read error, but IMO it's not a real problem
@@ -226,7 +229,7 @@ mod tests {
         // Create a MerkleTree and begins with a vec with an empty string and an initial depth of 1
         let tree = MerkleTree::new();
         assert_eq!(0, tree.depth);
-        assert_eq!(0, tree.amount);
+        assert_eq!(0, tree.inserted_elements_amount);
     }
 
     #[test]
