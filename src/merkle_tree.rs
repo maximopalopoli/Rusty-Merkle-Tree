@@ -128,12 +128,13 @@ impl MerkleTree {
 
     /// The logic is: First, insert the element, and then recalculate the middle hashes
     fn rehash_tree(&mut self, pos: usize) {
-        if let None = self.elements.get(pos) {
+        // Use is_none bc cargo clippy sugered it instead of an if let
+        if self.elements.get(pos).is_none() {
             return;
         }
 
         // Here i make the lower nodes be hashed before current node makes the hashing. Note that if the following is Null
-        // the error will be catched in the if let at the beginning of the function
+        // the error will be catched in the if is_none at the beginning of the function
         self.rehash_tree(pos + 1);
 
         // This can be reasoned the following way: If have two sons, my hash is the result of hashing both. If I have only
