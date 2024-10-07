@@ -85,7 +85,8 @@ impl MerkleTree {
             // The need of the for is to insert the non_leaf_nodes that will be used to calculate the root hash
             for i in 0..self.inserted_elements_amount {
                 // Note: self.inserted_elements_amount is a proxy of the number of copies
-                self.elements.insert(self.inserted_elements_amount - 1 + i, "".to_string());
+                self.elements
+                    .insert(self.inserted_elements_amount - 1 + i, "".to_string());
                 // These are empty strings because they will be calculated in the rehash_tree function from lower nodes
             }
         }
@@ -102,7 +103,8 @@ impl MerkleTree {
 
     /// Decided to insert all the copies to the tree when needed to fill spaces
     fn insert_hash(&mut self, hashed_string: String) {
-        let non_leaf_nodes = 2_usize.pow(f32::log2(self.inserted_elements_amount as f32) as u32 + 1) - 1;
+        let non_leaf_nodes =
+            2_usize.pow(f32::log2(self.inserted_elements_amount as f32) as u32 + 1) - 1;
 
         let gap = non_leaf_nodes - self.inserted_elements_amount;
         let amount_of_copies = self.elements.len() - self.inserted_elements_amount - non_leaf_nodes;
@@ -120,8 +122,10 @@ impl MerkleTree {
         } else if amount_of_copies > 0 {
             // When i replace copy element placed to fill the elements but it's not the last
             self.elements.pop();
-            self.elements
-                .insert(non_leaf_nodes + self.inserted_elements_amount, hashed_string);
+            self.elements.insert(
+                non_leaf_nodes + self.inserted_elements_amount,
+                hashed_string,
+            );
         }
 
         self.inserted_elements_amount += 1;
@@ -182,7 +186,8 @@ impl MerkleTree {
     pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
 
-        let non_leaf_nodes = 2_i8.pow(f32::log2(self.inserted_elements_amount as f32) as u32) as usize - 1;
+        let non_leaf_nodes =
+            2_i8.pow(f32::log2(self.inserted_elements_amount as f32) as u32) as usize - 1;
         *index += non_leaf_nodes;
 
         // raises a never read error, but IMO it's not a real problem
