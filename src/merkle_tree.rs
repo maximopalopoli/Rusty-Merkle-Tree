@@ -177,11 +177,6 @@ impl MerkleTree {
         }
     }
 
-    // Calculate based in amount of inserted elements and not in all elements bc in the second case i'd have to make a vec.len
-    pub fn depth(&self) -> usize {
-        self.depth
-    }
-
     /// Made a similar advance to the verify method, but here I save the sibling instead of rehashing
     pub fn generate_proof(&mut self, index: &mut usize) -> Vec<String> {
         let mut proof: Vec<String> = Vec::new();
