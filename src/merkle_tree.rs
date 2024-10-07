@@ -26,12 +26,12 @@ impl MerkleTree {
         }
     }
 
-    pub fn build(hashes: Vec<&str>, raw: bool) -> Self {
+    pub fn build(hashes: Vec<&str>, unhashed: bool) -> Self {
         let mut tree = MerkleTree::new();
 
         for hash in hashes {
-            if raw {
-                tree.add_raw(hash.to_string());
+            if unhashed {
+                tree.add_unhashed(hash.to_string());
             } else {
                 tree.add(hash.to_string());
             }
@@ -40,9 +40,9 @@ impl MerkleTree {
         tree
     }
 
-    fn hash_raw(raw_text: &str) -> String {
+    fn hash_text(unhashed_text: &str) -> String {
         let mut hasher = Sha256::new();
-        hasher.update(raw_text);
+        hasher.update(unhashed_text);
         let hashed: [u8; 32] = hasher.finalize().into();
         hex::encode(hashed)
     }
@@ -55,8 +55,8 @@ impl MerkleTree {
         hex::encode(hashed)
     }
 
-    pub fn add_raw(&mut self, raw_text: String) {
-        let hashed_string = MerkleTree::hash_raw(&raw_text);
+    pub fn add_unhashed(&mut self, unhashed_text: String) {
+        let hashed_string = MerkleTree::hash_text(&unhashed_text);
 
         self.add(hashed_string);
     }
@@ -231,12 +231,12 @@ mod tests {
 
     #[test]
     fn test_02_adding_one_text_adds_the_hash_to_the_vector() {
-        // Add a raw text to the tree, grows depth and tree now contains the hash
+        // Add a unhashed text to the tree, grows depth and tree now contains the hash
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
 
-        let hased_string_0 = MerkleTree::hash_raw("Merkle Tree");
-        let hased_string_1 = MerkleTree::hash_raw("Merkle Tree");
+        let hased_string_0 = MerkleTree::hash_text("Merkle Tree");
+        let hased_string_1 = MerkleTree::hash_text("Merkle Tree");
         let hashed_string_root = MerkleTree::combine_hashes(&hased_string_0, &hased_string_1);
 
         assert_eq!(1, tree.depth);
@@ -246,13 +246,13 @@ mod tests {
 
     #[test]
     fn test_03_adding_more_than_one_makes_root_a_hash_combination() {
-        // Adds two raw texts to the tree, depth is two and tree root is result of hashing both
+        // Adds two unhashed texts to the tree, depth is two and tree root is result of hashing both
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
 
-        let hashed_string_0 = MerkleTree::hash_raw("Merkle Tree");
-        let hashed_string_1 = MerkleTree::hash_raw("Ralph Merkle");
+        let hashed_string_0 = MerkleTree::hash_text("Merkle Tree");
+        let hashed_string_1 = MerkleTree::hash_text("Ralph Merkle");
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
@@ -263,19 +263,19 @@ mod tests {
 
     #[test]
     fn test_04_adding_three_elements_increases_depth_to_two() {
-        // Adds three raw texts to the tree, depth is two and tree root is result of hashing all
+        // Adds three unhashed texts to the tree, depth is two and tree root is result of hashing all
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
 
-        let hashed_string_00 = MerkleTree::hash_raw("Merkle Tree");
-        let hashed_string_01 = MerkleTree::hash_raw("Ralph Merkle");
+        let hashed_string_00 = MerkleTree::hash_text("Merkle Tree");
+        let hashed_string_01 = MerkleTree::hash_text("Ralph Merkle");
 
         let hashed_string_0 = MerkleTree::combine_hashes(&hashed_string_00, &hashed_string_01);
 
-        let hashed_string_10 = MerkleTree::hash_raw("Game of Life");
-        let hashed_string_11 = MerkleTree::hash_raw("Game of Life");
+        let hashed_string_10 = MerkleTree::hash_text("Game of Life");
+        let hashed_string_11 = MerkleTree::hash_text("Game of Life");
 
         let hashed_string_1 = MerkleTree::combine_hashes(&hashed_string_10, &hashed_string_11);
 
@@ -288,18 +288,18 @@ mod tests {
 
     #[test]
     fn test_05_adding_four_elements_doesnt_increase_depth_to_three() {
-        // Adds four raw texts to the tree, depth is two and tree root is result of hashing all
+        // Adds four unhashed texts to the tree, depth is two and tree root is result of hashing all
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
-        tree.add_raw("John Conway".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
+        tree.add_unhashed("John Conway".to_string());
 
-        let hashed_string_00 = MerkleTree::hash_raw("Merkle Tree");
-        let hashed_string_01 = MerkleTree::hash_raw("Ralph Merkle");
+        let hashed_string_00 = MerkleTree::hash_text("Merkle Tree");
+        let hashed_string_01 = MerkleTree::hash_text("Ralph Merkle");
 
-        let hashed_string_10 = MerkleTree::hash_raw("Game of Life");
-        let hashed_string_11 = MerkleTree::hash_raw("John Conway");
+        let hashed_string_10 = MerkleTree::hash_text("Game of Life");
+        let hashed_string_11 = MerkleTree::hash_text("John Conway");
 
         let hashed_string_0 = MerkleTree::combine_hashes(&hashed_string_00, &hashed_string_01);
         let hashed_string_1 = MerkleTree::combine_hashes(&hashed_string_10, &hashed_string_11);
@@ -313,30 +313,30 @@ mod tests {
 
     #[test]
     fn test_06_adding_five_elements_increases_depth_to_three() {
-        // Adds five raw texts to the tree, depth is three and tree root is result of hashing all
+        // Adds five unhashed texts to the tree, depth is three and tree root is result of hashing all
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
-        tree.add_raw("John Conway".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
+        tree.add_unhashed("John Conway".to_string());
 
-        tree.add_raw("Tetris".to_string());
+        tree.add_unhashed("Tetris".to_string());
 
-        let hashed_string_000 = MerkleTree::hash_raw("Merkle Tree");
-        let hashed_string_001 = MerkleTree::hash_raw("Ralph Merkle");
+        let hashed_string_000 = MerkleTree::hash_text("Merkle Tree");
+        let hashed_string_001 = MerkleTree::hash_text("Ralph Merkle");
 
-        let hashed_string_010 = MerkleTree::hash_raw("Game of Life");
-        let hashed_string_011 = MerkleTree::hash_raw("John Conway");
+        let hashed_string_010 = MerkleTree::hash_text("Game of Life");
+        let hashed_string_011 = MerkleTree::hash_text("John Conway");
 
         let hashed_string_00 = MerkleTree::combine_hashes(&hashed_string_000, &hashed_string_001);
         let hashed_string_01 = MerkleTree::combine_hashes(&hashed_string_010, &hashed_string_011);
 
         let hashed_string_0 = MerkleTree::combine_hashes(&hashed_string_00, &hashed_string_01);
 
-        let hashed_string_100 = MerkleTree::hash_raw("Tetris");
-        let hashed_string_101 = MerkleTree::hash_raw("Tetris");
-        let hashed_string_110 = MerkleTree::hash_raw("Tetris");
-        let hashed_string_111 = MerkleTree::hash_raw("Tetris");
+        let hashed_string_100 = MerkleTree::hash_text("Tetris");
+        let hashed_string_101 = MerkleTree::hash_text("Tetris");
+        let hashed_string_110 = MerkleTree::hash_text("Tetris");
+        let hashed_string_111 = MerkleTree::hash_text("Tetris");
 
         let hashed_string_10 = MerkleTree::combine_hashes(&hashed_string_100, &hashed_string_101);
         let hashed_string_11 = MerkleTree::combine_hashes(&hashed_string_110, &hashed_string_111);
@@ -351,26 +351,26 @@ mod tests {
 
     #[test]
     fn test_07_adding_eight_elements_doesnt_increase_depth_to_four() {
-        // Adds eight raw texts to the tree, depth is three and tree root is result of hashing all
+        // Adds eight unhashed texts to the tree, depth is three and tree root is result of hashing all
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
-        tree.add_raw("John Conway".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
+        tree.add_unhashed("John Conway".to_string());
 
-        tree.add_raw("Tetris1".to_string());
-        tree.add_raw("Tetris2".to_string());
-        tree.add_raw("Tetris3".to_string());
-        tree.add_raw("Tetris4".to_string());
+        tree.add_unhashed("Tetris1".to_string());
+        tree.add_unhashed("Tetris2".to_string());
+        tree.add_unhashed("Tetris3".to_string());
+        tree.add_unhashed("Tetris4".to_string());
 
-        let hashed_string_000 = MerkleTree::hash_raw("Merkle Tree");
-        let hashed_string_001 = MerkleTree::hash_raw("Ralph Merkle");
-        let hashed_string_010 = MerkleTree::hash_raw("Game of Life");
-        let hashed_string_011 = MerkleTree::hash_raw("John Conway");
-        let hashed_string_100 = MerkleTree::hash_raw("Tetris1");
-        let hashed_string_101 = MerkleTree::hash_raw("Tetris2");
-        let hashed_string_110 = MerkleTree::hash_raw("Tetris3");
-        let hashed_string_111 = MerkleTree::hash_raw("Tetris4");
+        let hashed_string_000 = MerkleTree::hash_text("Merkle Tree");
+        let hashed_string_001 = MerkleTree::hash_text("Ralph Merkle");
+        let hashed_string_010 = MerkleTree::hash_text("Game of Life");
+        let hashed_string_011 = MerkleTree::hash_text("John Conway");
+        let hashed_string_100 = MerkleTree::hash_text("Tetris1");
+        let hashed_string_101 = MerkleTree::hash_text("Tetris2");
+        let hashed_string_110 = MerkleTree::hash_text("Tetris3");
+        let hashed_string_111 = MerkleTree::hash_text("Tetris4");
 
         let hashed_string_00 = MerkleTree::combine_hashes(&hashed_string_000, &hashed_string_001);
         let hashed_string_01 = MerkleTree::combine_hashes(&hashed_string_010, &hashed_string_011);
@@ -389,36 +389,36 @@ mod tests {
 
     #[test]
     fn test_08_adding_nine_elements_increases_depth_to_four() {
-        // Adds nine raw texts to the tree, depth is four and tree root is result of hashing all
+        // Adds nine unhashed texts to the tree, depth is four and tree root is result of hashing all
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
-        tree.add_raw("John Conway".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
+        tree.add_unhashed("John Conway".to_string());
 
-        tree.add_raw("Tetris1".to_string());
-        tree.add_raw("Tetris2".to_string());
-        tree.add_raw("Tetris3".to_string());
-        tree.add_raw("Tetris4".to_string());
-        tree.add_raw("Tetris5".to_string());
+        tree.add_unhashed("Tetris1".to_string());
+        tree.add_unhashed("Tetris2".to_string());
+        tree.add_unhashed("Tetris3".to_string());
+        tree.add_unhashed("Tetris4".to_string());
+        tree.add_unhashed("Tetris5".to_string());
 
-        let hashed_string_0000 = MerkleTree::hash_raw("Merkle Tree");
-        let hashed_string_0001 = MerkleTree::hash_raw("Ralph Merkle");
-        let hashed_string_0010 = MerkleTree::hash_raw("Game of Life");
-        let hashed_string_0011 = MerkleTree::hash_raw("John Conway");
-        let hashed_string_0100 = MerkleTree::hash_raw("Tetris1");
-        let hashed_string_0101 = MerkleTree::hash_raw("Tetris2");
-        let hashed_string_0110 = MerkleTree::hash_raw("Tetris3");
-        let hashed_string_0111 = MerkleTree::hash_raw("Tetris4");
+        let hashed_string_0000 = MerkleTree::hash_text("Merkle Tree");
+        let hashed_string_0001 = MerkleTree::hash_text("Ralph Merkle");
+        let hashed_string_0010 = MerkleTree::hash_text("Game of Life");
+        let hashed_string_0011 = MerkleTree::hash_text("John Conway");
+        let hashed_string_0100 = MerkleTree::hash_text("Tetris1");
+        let hashed_string_0101 = MerkleTree::hash_text("Tetris2");
+        let hashed_string_0110 = MerkleTree::hash_text("Tetris3");
+        let hashed_string_0111 = MerkleTree::hash_text("Tetris4");
 
-        let hashed_string_1000 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1001 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1010 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1011 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1100 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1101 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1110 = MerkleTree::hash_raw("Tetris5");
-        let hashed_string_1111 = MerkleTree::hash_raw("Tetris5");
+        let hashed_string_1000 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1001 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1010 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1011 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1100 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1101 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1110 = MerkleTree::hash_text("Tetris5");
+        let hashed_string_1111 = MerkleTree::hash_text("Tetris5");
 
         let hashed_string_000 =
             MerkleTree::combine_hashes(&hashed_string_0000, &hashed_string_0001);
@@ -458,15 +458,15 @@ mod tests {
     fn test_09_hash_function_works_correctly() {
         // Assert that hash function works correctly
         assert_eq!(
-            MerkleTree::hash_raw("Merkle Tree"),
+            MerkleTree::hash_text("Merkle Tree"),
             "cbcbd2ab218ea6a894d3a93e0e83ed0cc0286597a826d3ef4ff3a360e22a7952"
         );
         assert_eq!(
-            MerkleTree::hash_raw("Merkle Root"),
+            MerkleTree::hash_text("Merkle Root"),
             "09b4b6987df5353bfe0055491ac474539691011d0e95ecdaf8ad06906504308b"
         );
         assert_eq!(
-            MerkleTree::hash_raw("Ralph Merkle"),
+            MerkleTree::hash_text("Ralph Merkle"),
             "5a93dda4ddfe626b84b6ffdb6f4ee27da108a28762247359b9d25310c6f00736"
         );
     }
@@ -474,8 +474,8 @@ mod tests {
     #[test]
     fn test_10_combined_hash_function_works_correctly() {
         // Assert that the combine hashes function works as expected
-        let hash_left = MerkleTree::hash_raw("Merkle Tree");
-        let hash_right = MerkleTree::hash_raw("Merkle Root");
+        let hash_left = MerkleTree::hash_text("Merkle Tree");
+        let hash_right = MerkleTree::hash_text("Merkle Root");
         assert_eq!(
             MerkleTree::combine_hashes(&hash_left, &hash_right),
             "c4f431efc6c50e3b703e11233dd219eaef584c24e4a4b76da22487eb74ec9258"
@@ -501,10 +501,10 @@ mod tests {
     fn test_12_proof_of_a_four_elements_tree_is_verified_correctly() {
         // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
-        tree.add_raw("John Conway".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
+        tree.add_unhashed("John Conway".to_string());
 
         assert!(tree.verify(
             vec![
@@ -520,10 +520,10 @@ mod tests {
     fn test_13_proof_of_a_four_elements_tree_with_a_false_seed_doesnt_work() {
         // Given a proof, a leaf of the tree, and the index of the leave, the proof verifies correctly
         let mut tree = MerkleTree::new();
-        tree.add_raw("Merkle Tree".to_string());
-        tree.add_raw("Ralph Merkle".to_string());
-        tree.add_raw("Game of Life".to_string());
-        tree.add_raw("John Conway".to_string());
+        tree.add_unhashed("Merkle Tree".to_string());
+        tree.add_unhashed("Ralph Merkle".to_string());
+        tree.add_unhashed("Game of Life".to_string());
+        tree.add_unhashed("John Conway".to_string());
 
         assert!(!tree.verify(
             vec![
@@ -559,7 +559,7 @@ mod tests {
     }
 
     #[test]
-    fn test_15_build_raw_creates_a_correct_tree() {
+    fn test_15_build_unhashed_creates_a_correct_tree() {
         // I can build a tree from an array, and it contains the elements
 
         let tree = MerkleTree::build(vec!["a", "b", "c", "d"], true);

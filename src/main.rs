@@ -10,8 +10,8 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
     match args[0] {
         "--help" => {
             println!("  build - Usage: build <hash-1> <hash-2> ... <hash-n>");
-            println!("  build-raw - Usage: build-raw <raw-text-1> <raw-text-2> ... <raw-text-n>");
-            println!("  add-raw - Usage: add-raw raw-text");
+            println!("  build-unhashed - Usage: build-unhashed <unhashed-text-1> <unhashed-text-2> ... <unhashed-text-n>");
+            println!("  add-unhashed - Usage: add-unhashed unhashed-text");
             println!("  add - Usage: add 32-bytes-hash");
             println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
             println!("  proof - Usage: proof index");
@@ -22,8 +22,8 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
             let hashes: Vec<&str> = Vec::from(&args[1..]);
             *tree = MerkleTree::build(hashes, false);
         }
-        "build-raw" => {
-            // Usage: build <raw-text-1> <raw-text-2> ... <raw-text-n>
+        "build-unhashed" => {
+            // Usage: build <unhashed-text-1> <unhashed-text-2> ... <unhashed-text-n>
             let hashes: Vec<&str> = Vec::from(&args[1..]);
             *tree = MerkleTree::build(hashes, true);
         }
@@ -37,13 +37,13 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
                 ));
             }
         }
-        "add-raw" => {
-            // Usage: add-raw raw-text
+        "add-unhashed" => {
+            // Usage: add-unhashed unhashed-text
             if let Some(str) = args.get(1) {
-                tree.add_raw(str.to_string());
+                tree.add_unhashed(str.to_string());
             } else {
                 return Err(UserInterfaceErrors::NotEnoughArgumentsError(
-                    "add-raw raw-text".to_string(),
+                    "add-unhashed unhashed-text".to_string(),
                 ));
             }
         }
