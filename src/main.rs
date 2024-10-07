@@ -55,13 +55,14 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
                     "verify proof1 proof2 ... proofN seed index".to_string(),
                 ));
             }
+
             let mut proof = Vec::new();
-            for item in args.iter().skip(1).take(tree.depth()) {
+            for item in args.iter().skip(1).take(args.len() - 3) {
                 proof.push((*item).to_string());
             }
-            let leaf = args[1 + tree.depth()].to_string();
+            let leaf = args[args.len() - 2].to_string();
 
-            match args[1 + tree.depth() + 1].to_string().parse() {
+            match args[args.len() - 1].to_string().parse() {
                 Ok(mut index) => {
                     if tree.verify(proof, leaf, &mut index) {
                         println!("Proof has been verified");
