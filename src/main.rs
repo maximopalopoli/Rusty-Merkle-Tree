@@ -39,9 +39,8 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
         }
         "add-unhashed" => {
             // Usage: add-unhashed unhashed-text
-            if args.len() > 2 {
+            if args.len() >= 2 {
                 let text: String = Vec::from(&args[1..]).join(" ");
-                println!("{text}");
                 tree.add_unhashed(text);
             } else {
                 return Err(UserInterfaceErrors::NotEnoughArgumentsError(
