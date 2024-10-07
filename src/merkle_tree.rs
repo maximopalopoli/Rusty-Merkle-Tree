@@ -61,9 +61,9 @@ impl MerkleTree {
         self.add(hashed_string);
     }
 
-    /// The logic is: first resize if needed, second insert the element, and then recalculate the middle and root hashes
+    /// The logic is: first expand the tree if needed, second insert the element, and then recalculate the middle and root hashes
     pub fn add(&mut self, hashed_string: String) {
-        self.resize_tree();
+        self.expand_tree();
 
         self.insert_hash(hashed_string);
 
@@ -71,7 +71,7 @@ impl MerkleTree {
     }
 
     /// When depth increase is needed, then insert the middle hashes required to calculate all the leaf hashes of the level
-    fn resize_tree(&mut self) {
+    fn expand_tree(&mut self) {
         if self.amount == 0 {
             self.depth = 1;
             self.elements.insert(0, "".to_string());
