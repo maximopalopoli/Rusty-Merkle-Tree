@@ -2,6 +2,8 @@
 
 An implementation of [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree) in Rust.
 
+To run the program, use `cargo run`, and then use the commands below. Initially, the program will start with an empty tree, to which you can add elements.
+
 ## Commands
 
 ### --help
