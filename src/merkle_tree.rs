@@ -4,8 +4,6 @@ use sha2::{Digest, Sha256};
 pub struct MerkleTree {
     /// I've chosen a vector temporarily bc it was the simpler way to do it
     elements: Vec<String>,
-    /// How deep reaches the table from the root to the leaves
-    depth: usize,
     /// Ammount of inserted leaf nodes (without reapeated ones)
     inserted_elements_amount: usize,
 }
@@ -21,7 +19,6 @@ impl MerkleTree {
         let elements = Vec::new();
         MerkleTree {
             elements,
-            depth: 0,
             inserted_elements_amount: 0,
         }
     }
@@ -73,15 +70,13 @@ impl MerkleTree {
     /// When depth increase is needed, then insert the middle hash nodes required to calculate all the leaf hashes of the level
     fn expand_tree(&mut self) {
         if self.inserted_elements_amount == 0 {
-            self.depth = 1;
             self.elements.insert(0, "".to_string());
         }
-        // Needed this bc 1 is power of two and should not execute the logic that is inside the if
+        // Needed this bc 1 is power of two and should not execute the logic that is inside the lower if
         if self.inserted_elements_amount == 1 {
             return;
         }
         if MerkleTree::number_is_power_of_two(self.inserted_elements_amount as f32) {
-            self.depth += 1;
             // The need of the for is to insert the non_leaf_nodes that will be used to calculate the root hash
             for i in 0..self.inserted_elements_amount {
                 // Note: self.inserted_elements_amount is a proxy of the number of copies
@@ -232,15 +227,16 @@ mod tests {
 
     #[test]
     fn test_01_tree_is_created_with_valid_args() {
-        // Create a MerkleTree and begins with a vec with an empty string and an initial depth of 1
+        // Create a MerkleTree and begins with an empty vec
         let tree = MerkleTree::new();
-        assert_eq!(0, tree.depth);
+
+        assert_eq!(0, tree.elements.len());
         assert_eq!(0, tree.inserted_elements_amount);
     }
 
     #[test]
     fn test_02_adding_one_text_adds_the_hash_to_the_vector() {
-        // Add a unhashed text to the tree, grows depth and tree now contains the hash
+        // Add a unhashed text to the tree, there are three elements and tree now contains the hash
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
 
@@ -248,14 +244,14 @@ mod tests {
         let hased_string_1 = MerkleTree::hash_text("Merkle Tree");
         let hashed_string_root = MerkleTree::combine_hashes(&hased_string_0, &hased_string_1);
 
-        assert_eq!(1, tree.depth);
+        assert_eq!(3, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // e92a2fd865f0aada3a9b81de2ca576ae627c025dd282fc2be754f9dee4e234fd
     }
 
     #[test]
     fn test_03_adding_more_than_one_makes_root_a_hash_combination() {
-        // Adds two unhashed texts to the tree, depth is two and tree root is result of hashing both
+        // Adds two unhashed texts to the tree, there are three elements in vector and tree root is result of hashing both
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
         tree.add_unhashed("Ralph Merkle".to_string());
@@ -265,14 +261,14 @@ mod tests {
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(1, tree.depth);
+        assert_eq!(3, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // 5a13e205575dc3d9a374dfe32941511e62f8cf900fb9df59cae9c17bd8b8ce15
     }
 
     #[test]
     fn test_04_adding_three_elements_increases_depth_to_two() {
-        // Adds three unhashed texts to the tree, depth is two and tree root is result of hashing all
+        // Adds three unhashed texts to the tree, there are seven elements in vector and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
         tree.add_unhashed("Ralph Merkle".to_string());
@@ -290,14 +286,14 @@ mod tests {
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(2, tree.depth);
+        assert_eq!(7, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // d28d8deea9f793a014e668ea4050f34dc669cfc6084cd7bf3ba9ccdf62901cbf
     }
 
     #[test]
     fn test_05_adding_four_elements_doesnt_increase_depth_to_three() {
-        // Adds four unhashed texts to the tree, depth is two and tree root is result of hashing all
+        // Adds four unhashed texts to the tree, there are seven elements in vector and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
         tree.add_unhashed("Ralph Merkle".to_string());
@@ -315,14 +311,14 @@ mod tests {
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(2, tree.depth);
+        assert_eq!(7, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // 8b63c8eebf3c438a9e6aff8c860febfda5d28ab473faa6c6375a01009920b91d
     }
 
     #[test]
     fn test_06_adding_five_elements_increases_depth_to_three() {
-        // Adds five unhashed texts to the tree, depth is three and tree root is result of hashing all
+        // Adds five unhashed texts to the tree, there are fifteen elements in vector and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
         tree.add_unhashed("Ralph Merkle".to_string());
@@ -353,14 +349,14 @@ mod tests {
         let hashed_string_1 = MerkleTree::combine_hashes(&hashed_string_10, &hashed_string_11);
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(3, tree.depth);
+        assert_eq!(15, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // 8b63c8eebf3c438a9e6aff8c860febfda5d28ab473faa6c6375a01009920b91d
     }
 
     #[test]
     fn test_07_adding_eight_elements_doesnt_increase_depth_to_four() {
-        // Adds eight unhashed texts to the tree, depth is three and tree root is result of hashing all
+        // Adds eight unhashed texts to the tree, there are fifteen elements in vector and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
         tree.add_unhashed("Ralph Merkle".to_string());
@@ -391,14 +387,14 @@ mod tests {
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(3, tree.depth);
+        assert_eq!(15, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // 584d46bf1bfe774bca9d4f620d127a87a2f78a341001f5f644a2f5f153c82cad
     }
 
     #[test]
     fn test_08_adding_nine_elements_increases_depth_to_four() {
-        // Adds nine unhashed texts to the tree, depth is four and tree root is result of hashing all
+        // Adds nine unhashed texts to the tree, there are thirty one elements in vector and tree root is result of hashing all
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Merkle Tree".to_string());
         tree.add_unhashed("Ralph Merkle".to_string());
@@ -458,7 +454,7 @@ mod tests {
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(4, tree.depth);
+        assert_eq!(31, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // 7d6aca7ece41a33246a1fe3d13dcf074b701aa43717a19a93047553fc38294b0
     }
@@ -616,7 +612,7 @@ mod tests {
 
     #[test]
     fn test_18_tree_supports_long_unhashed_texts() {
-        // Adds four unhashed long texts to the tree, depth is two and tree root is result of hashing all
+        // Adds four unhashed long texts to the tree, there are seven elements in vector and tree root is result of hashing all
 
         let mut tree = MerkleTree::new();
         tree.add_unhashed("Aliquam quis semper dolor. Nam egestas pharetra enim, in aliquet leo eleifend id. Fusce lacinia quam at libero condimentum, vitae fringilla ex volutpat. Nunc sollicitudin est eu lectus mattis hendrerit. Nam sit amet tristique sapien. Pellentesque sed lorem diam. Ut eu tempor elit.".to_string());
@@ -635,7 +631,7 @@ mod tests {
 
         let hashed_string_root = MerkleTree::combine_hashes(&hashed_string_0, &hashed_string_1);
 
-        assert_eq!(2, tree.depth);
+        assert_eq!(7, tree.elements.len());
         assert_eq!(hashed_string_root, tree.elements[0]);
         // c567f133613aac1e0f011569c65daf490adbb87a87db7246ac045b79c64d1460
     }
