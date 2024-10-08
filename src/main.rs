@@ -10,8 +10,8 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
     match args[0] {
         "--help" => {
             println!("  build - Usage: build <hash-1> <hash-2> ... <hash-n>");
-            println!("  build-raw - Usage: build-raw <raw-text-1> <raw-text-2> ... <raw-text-n>");
-            println!("  add-raw - Usage: add-raw raw-text");
+            println!("  build-unhashed - Usage: build-unhashed <unhashed-text-1> <unhashed-text-2> ... <unhashed-text-n>");
+            println!("  add-unhashed - Usage: add-unhashed unhashed-text");
             println!("  add - Usage: add 32-bytes-hash");
             println!("  verify - Usage: verify proof1 proof2 ... proofN seed index");
             println!("  proof - Usage: proof index");
@@ -22,8 +22,8 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
             let hashes: Vec<&str> = Vec::from(&args[1..]);
             *tree = MerkleTree::build(hashes, false);
         }
-        "build-raw" => {
-            // Usage: build <raw-text-1> <raw-text-2> ... <raw-text-n>
+        "build-unhashed" => {
+            // Usage: build <unhashed-text-1> <unhashed-text-2> ... <unhashed-text-n>
             let hashes: Vec<&str> = Vec::from(&args[1..]);
             *tree = MerkleTree::build(hashes, true);
         }
@@ -37,13 +37,14 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
                 ));
             }
         }
-        "add-raw" => {
-            // Usage: add-raw raw-text
-            if let Some(str) = args.get(1) {
-                tree.add_raw(str.to_string());
+        "add-unhashed" => {
+            // Usage: add-unhashed unhashed-text
+            if args.len() >= 2 {
+                let text: String = Vec::from(&args[1..]).join(" ");
+                tree.add_unhashed(text);
             } else {
                 return Err(UserInterfaceErrors::NotEnoughArgumentsError(
-                    "add-raw raw-text".to_string(),
+                    "add-unhashed unhashed-text".to_string(),
                 ));
             }
         }
@@ -54,13 +55,14 @@ fn process_comands(line: String, tree: &mut MerkleTree) -> Result<(), UserInterf
                     "verify proof1 proof2 ... proofN seed index".to_string(),
                 ));
             }
+
             let mut proof = Vec::new();
-            for item in args.iter().skip(1).take(tree.depth()) {
+            for item in args.iter().skip(1).take(args.len() - 3) {
                 proof.push((*item).to_string());
             }
-            let leaf = args[1 + tree.depth()].to_string();
+            let leaf = args[args.len() - 2].to_string();
 
-            match args[1 + tree.depth() + 1].to_string().parse() {
+            match args[args.len() - 1].to_string().parse() {
                 Ok(mut index) => {
                     if tree.verify(proof, leaf, &mut index) {
                         println!("Proof has been verified");
